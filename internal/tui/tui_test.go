@@ -11,12 +11,12 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/x/ansi"
 
-	"github.com/tryshchenko/backup-tool/internal/config"
-	"github.com/tryshchenko/backup-tool/internal/engine"
-	"github.com/tryshchenko/backup-tool/internal/meta"
-	"github.com/tryshchenko/backup-tool/internal/rsync"
-	"github.com/tryshchenko/backup-tool/internal/steps"
-	"github.com/tryshchenko/backup-tool/internal/volume"
+	"github.com/tryshchenko/btpair/internal/config"
+	"github.com/tryshchenko/btpair/internal/engine"
+	"github.com/tryshchenko/btpair/internal/meta"
+	"github.com/tryshchenko/btpair/internal/rsync"
+	"github.com/tryshchenko/btpair/internal/steps"
+	"github.com/tryshchenko/btpair/internal/volume"
 )
 
 // ── helpers ─────────────────────────────────────────────────────────────
@@ -131,6 +131,11 @@ func newApp(t *testing.T) *fixture {
 	f.resize(120, 40)
 	f.send(a.scan()())
 	f.send(a.pollSpace(a.vols...)())
+	// Realistic sizes give realistic label widths ("812.3 GB used"): tiny
+	// test folders once hid a layout bug.
+	for i, v := range a.vols {
+		a.spaces[v.UUID] = volume.Space{Total: 2_000_000_000_000, Free: uint64(1_187_654_321_000 - i*99_000_000_000)}
+	}
 	return f
 }
 
@@ -328,7 +333,7 @@ var barRun = regexp.MustCompile(`[━╍]+`)
 
 // Regression: the replica's bar shrank when it carried a "+X incoming" note.
 func TestDriveBarsAlign(t *testing.T) {
-	for _, w := range []int{90, 100, 120, 140, 200} {
+	for _, w := range []int{90, 100, 112, 120, 140, 200} {
 		f := newApp(t)
 		f.resize(w, 40)
 		f.runScreen(t, false)
@@ -346,8 +351,8 @@ func TestDriveBarsAlign(t *testing.T) {
 				}
 			}
 		}
-		if len(bars) != 2 || bars[0] != bars[1] {
-			t.Errorf("@%d: bar widths %v, want two equal bars", w, bars)
+		if len(bars) != 2 || bars[0] != bars[1] || bars[0] < 8 {
+			t.Errorf("@%d: bar widths %v, want two equal bars of at least 8 cells", w, bars)
 		}
 	}
 }

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tryshchenko/backup-tool/internal/meta"
-	"github.com/tryshchenko/backup-tool/internal/volume"
+	"github.com/tryshchenko/btpair/internal/meta"
+	"github.com/tryshchenko/btpair/internal/volume"
 )
 
 func detect(t *testing.T, root string) []*volume.Volume {

@@ -1,4 +1,4 @@
-module github.com/tryshchenko/backup-tool
+module github.com/tryshchenko/btpair
 
 go 1.26.2
 

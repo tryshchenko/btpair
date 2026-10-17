@@ -14,11 +14,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/tryshchenko/backup-tool/internal/config"
-	"github.com/tryshchenko/backup-tool/internal/meta"
-	"github.com/tryshchenko/backup-tool/internal/rsync"
-	"github.com/tryshchenko/backup-tool/internal/steps"
-	"github.com/tryshchenko/backup-tool/internal/volume"
+	"github.com/tryshchenko/btpair/internal/config"
+	"github.com/tryshchenko/btpair/internal/meta"
+	"github.com/tryshchenko/btpair/internal/rsync"
+	"github.com/tryshchenko/btpair/internal/steps"
+	"github.com/tryshchenko/btpair/internal/volume"
 )
 
 type PhaseKind int
@@ -609,7 +609,7 @@ func (s *stepReporter) Current(item string) { s.cur = item; s.emit(false) }
 func (s *stepReporter) Log(msg string)      { s.r.info("%s", msg) }
 func (s *stepReporter) Warn(msg string)     { s.r.warn("%s", msg) }
 
-// lockPair prevents two bt processes from syncing the same pair at once.
+// lockPair prevents two btpair processes from syncing the same pair at once.
 func lockPair(replicaPath string) (*os.File, error) {
 	p := filepath.Join(replicaPath, meta.Dir, "lock")
 	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
@@ -621,7 +621,7 @@ func lockPair(replicaPath string) (*os.File, error) {
 	}
 	if err := syscall.Flock(int(f.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
 		f.Close()
-		return nil, errors.New("another bt run is already syncing this pair")
+		return nil, errors.New("another btpair run is already syncing this pair")
 	}
 	return f, nil
 }

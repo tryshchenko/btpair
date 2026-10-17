@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tryshchenko/backup-tool/internal/config"
+	"github.com/tryshchenko/btpair/internal/config"
 )
 
 // Shell runs a user-defined command. It lets new steps be prototyped in

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tryshchenko/backup-tool/internal/meta"
+	"github.com/tryshchenko/btpair/internal/meta"
 )
 
 func TestDetectDev(t *testing.T) {

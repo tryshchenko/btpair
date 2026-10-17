@@ -287,7 +287,7 @@ func helpBar(pairs ...string) string {
 }
 
 func header(width int, crumbs []string, right string) string {
-	left := sLogo.Render("◆ bt")
+	left := sLogo.Render("◆ btpair")
 	for _, c := range crumbs {
 		left += sFaint.Render("  ›  ") + sText.Render(c)
 	}

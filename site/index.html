@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>btpair — backups without a NAS</title>
+  <meta name="description" content="You don't need a NAS for backups. btpair turns two external SSDs and your Mac into a safe, one-way mirror — main drive locked read-only, displaced files kept in trash, every run recorded on both drives.">
+  <!-- Set the repository URL here; every GitHub link on the page uses it. -->
+  <meta name="github-url" content="https://github.com/tryshchenko/btpair">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/screens.css">
+</head>
+<body>
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="logo" href="#top" aria-label="btpair home"><span class="logo-mark">◆</span> btpair</a>
+      <nav class="nav-links" aria-label="Sections">
+        <a href="#how">How it works</a>
+        <a href="#screens">Screens</a>
+        <a href="#safety">Safety</a>
+        <a href="#steps">Extra steps</a>
+        <a href="#start">Get started</a>
+      </nav>
+      <a class="btn btn-ghost btn-sm js-github" href="#">
+        <svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ── hero ─────────────────────────────────────────────────────── -->
+    <section class="hero">
+      <div class="wrap">
+        <p class="eyebrow">Two SSDs · one Mac · no server</p>
+        <h1>You don’t need a NAS<br><span class="grad">for backups.</span></h1>
+        <p class="lead">Two external SSDs and your Mac are enough. Plug in the replica and btpair mirrors your main drive onto it — one way, safely, with a record of every run on both drives. No box in the closet, nothing to maintain.</p>
+        <div class="cta">
+          <a class="btn btn-primary js-github" href="#">View on GitHub</a>
+          <a class="btn btn-ghost" href="#start">Get started</a>
+        </div>
+        <p class="fineprint">Requires macOS and rsync 3 &nbsp;·&nbsp; <code>brew install rsync</code></p>
+
+        <figure class="term term-hero">
+          <div class="term-bar"><i></i><i></i><i></i><span>btpair — work · backup</span></div>
+          <div class="term-body"><div class="term-fit"><pre class="term-screen" style="--rows:31">  <span class="t0"><i>◆</i> btpair</span><span class="t1">  <i>›</i>  </span><span class="t2">work</span><span class="t1">  <i>›</i>  </span><span class="t2">backup</span>                                                                          <span class="t3"><i>⏱</i> </span><span class="t4">0:07</span>
+
+  <span class="t5">PHASES</span>                               <span class="t1">│</span> <span class="t5">MIRROR MAIN <i>→</i> REPLICA</span>
+  <span class="t6"><i>✓</i></span> <span class="t2">Preflight checks</span>              <span class="t3">10ms</span> <span class="t1">│</span> <span class="t7"><b class="blk" style="--n:1"></b></span><span class="t8"><b class="blk" style="--n:1"></b></span><span class="t9"><b class="blk" style="--n:1"></b></span><span class="t10"><b class="blk" style="--n:1"></b></span><span class="t11"><b class="blk" style="--n:1"></b></span><span class="t12"><b class="blk" style="--n:1"></b></span><span class="t13"><b class="blk" style="--n:1"></b></span><span class="t14"><b class="blk" style="--n:1"></b></span><span class="t15"><b class="blk" style="--n:1"></b></span><span class="t16"><b class="blk" style="--n:1"></b></span><span class="t17"><b class="blk" style="--n:1"></b></span><span class="t18"><b class="blk" style="--n:1"></b></span><span class="t19"><b class="blk" style="--n:1"></b></span><span class="t20"><b class="blk" style="--n:1"></b></span><span class="t21"><b class="blk" style="--n:1"></b></span><span class="t22"><b class="blk" style="--n:1"></b></span><span class="t23"><b class="blk" style="--n:1"></b></span><span class="t24"><b class="blk" style="--n:1"></b></span><span class="t25"><b class="blk" style="--n:1"></b></span><span class="t26"><b class="blk" style="--n:1"></b></span><span class="t27"><b class="blk" style="--n:1"></b></span><span class="t28">▎</span><span class="t29">                                        </span> <span class="t30"> 34.5%</span>
+    <span class="t3">WORK-MAIN <i>→</i> WORK-REPLICA</span>           <span class="t1">│</span> <span class="t2">63.2 MB</span><span class="t3"> of </span><span class="t2">183.2 MB</span><span class="t1">   ·   </span><span class="t31">15.1 MB/s</span><span class="t1">   ·   </span><span class="t3">ETA </span><span class="t2">0:08</span>
+  <span class="t6"><i>✓</i></span> <span class="t2">+ Write file inventory</span>       <span class="t3">421ms</span> <span class="t1">│</span> <span class="t3">files </span><span class="t2">118 / 120</span><span class="t1">   ·   </span><span class="t3">deleted </span><span class="t2">18</span><span class="t1">   ·   </span><span class="t6">no errors</span>
+    <span class="t3">inventory: 380 files</span>               <span class="t1">│</span> <span class="t32"><i>↳</i> </span><span class="t4">Video/drone-flight.mp4</span>  <span class="t3">82.0 MB</span>
+  <span class="t6"><i>✓</i></span> <span class="t2">+ Export notes</span>                <span class="t3">1.2s</span> <span class="t1">│</span>
+    <span class="t3">exported 20 notes</span>                  <span class="t1">│</span> <span class="t5">DRIVES</span>
+  <span class="t3"><i>–</i></span> <span class="t3">Lock main drive read-only</span>          <span class="t1">│</span> <span class="t5">MAIN     </span><span class="t2">WORK-MAIN</span>     <span class="t6">━━━━</span><span class="t33">━━━━━━━━━━━━━━━━━━</span>  <span class="t2">1.8 GB free</span>
+    <span class="t3">dev drive</span>                          <span class="t1">│</span> <span class="t5">REPLICA  </span><span class="t2">WORK-REPLICA</span>  <span class="t6">━━━━</span><span class="t31">╍</span><span class="t33">━━━━━━━━━━━━━━━━━</span>  <span class="t2">1.8 GB free</span><span class="t31">  +120.1 MB</span>
+  <span class="t6"><i>✓</i></span> <span class="t2">Analyze changes</span>               <span class="t3">78ms</span> <span class="t1">│</span>
+    <span class="t3">120 to copy · 18 to delete · 183.<i>…</i></span> <span class="t1">│</span>
+  <span class="t32"><i>⠏</i></span> <span class="t30">Mirror main <i>→</i> replica</span>         <span class="t32">0:05</span> <span class="t1">│</span>
+  <span class="t1"><i>○</i></span> <span class="t3">Write metadata</span>                     <span class="t1">│</span>
+
+  <span class="t1">────────────────────────────────────────────────────────────────────────────────────────────────────────────</span>
+  <span class="t34">Activity</span>    <span class="t3">Problems 0</span>
+  <span class="t1">17:40:40</span>  <span class="t31">+ </span><span class="t4">Projects/dune/src/file_23.dat</span>
+  <span class="t1">17:40:40</span>  <span class="t31">+ </span><span class="t4">Projects/dune/src/file_24.dat</span>
+  <span class="t1">17:40:40</span>  <span class="t31">+ </span><span class="t4">Projects/dune/src/file_25.dat</span>
+  <span class="t1">17:40:40</span>  <span class="t31">+ </span><span class="t4">Projects/dune/src/file_3.dat</span>
+  <span class="t1">17:40:40</span>  <span class="t31">+ </span><span class="t4">Projects/dune/src/file_4.dat</span>
+  <span class="t1">17:40:40</span>  <span class="t31">+ </span><span class="t4">Projects/dune/src/file_5.dat</span>
+  <span class="t1">17:40:40</span>  <span class="t31">+ </span><span class="t4">Projects/dune/src/file_6.dat</span>
+  <span class="t1">17:40:40</span>  <span class="t31">+ </span><span class="t4">Projects/dune/src/file_7.dat</span>
+  <span class="t1">17:40:40</span>  <span class="t31">+ </span><span class="t4">Projects/dune/src/file_8.dat</span>
+  <span class="t1">17:40:40</span>  <span class="t31">+ </span><span class="t4">Projects/dune/src/file_9.dat</span>
+  <span class="t1">17:40:40</span>  <span class="t31">+ </span><span class="t4">Video/drone-flight.mp4</span>
+  <span class="t1">────────────────────────────────────────────────────────────────────────────────────────────────────────────</span>
+  <span class="t35">tab</span> <span class="t3">activity/problems</span><span class="t1">  ·  </span><span class="t35"><i>↑</i><i>↓</i></span> <span class="t3">scroll</span><span class="t1">  ·  </span><span class="t35">G</span> <span class="t3">follow</span><span class="t1">  ·  </span><span class="t35">ctrl+c</span> <span class="t3">cancel</span></pre></div></div>
+        </figure>
+      </div>
+    </section>
+
+    <section class="facts" aria-label="Highlights">
+      <div class="wrap facts-grid">
+        <div><strong>No server</strong><span>Just drives you already own</span></div>
+        <div><strong>One way</strong><span>Main → replica, never back</span></div>
+        <div><strong>Nothing lost</strong><span>Displaced files go to trash</span></div>
+        <div><strong>On both drives</strong><span>Every run is recorded</span></div>
+      </div>
+    </section>
+
+    <!-- ── how it works ─────────────────────────────────────────────── -->
+    <section id="how" class="section">
+      <div class="wrap">
+        <p class="kicker">How it works</p>
+        <h2>Four steps, the same every time</h2>
+        <ol class="steps">
+          <li>
+            <span class="num">1</span>
+            <h3>Pair</h3>
+            <p>Plug in two drives and press <kbd>n</kbd>. btpair writes a small <code>.backuptool/</code> folder to each: the pair it belongs to, its role, and its partner's volume UUID. From then on btpair recognizes main and replica by themselves — names don't matter.</p>
+          </li>
+          <li>
+            <span class="num">2</span>
+            <h3>Plan</h3>
+            <p>Pick the extra steps for this run. Each checks first whether it has anything to do, so you see “up to date” before committing. A dry run lists every file that would be copied or removed.</p>
+          </li>
+          <li>
+            <span class="num">3</span>
+            <h3>Mirror</h3>
+            <p>btpair locks the main drive read-only, measures the work with a dry pass, then mirrors with rsync. Anything the replica would lose — deleted or overwritten — moves to a dated trash folder instead.</p>
+          </li>
+          <li>
+            <span class="num">4</span>
+            <h3>Record</h3>
+            <p>Status, stats, errors and anything left pending are written to both drives. Plug them into any Mac later and btpair knows when they last synced and how it went.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ── screens ──────────────────────────────────────────────────── -->
+    <section id="screens" class="section section-alt">
+      <div class="wrap">
+        <p class="kicker">Screens</p>
+        <h2>Everything on one screen, nothing hidden</h2>
+        <p class="sub">A live phase timeline, a progress bar with speed and ETA, free space on both drives, and a log that keeps errors one tab away.</p>
+
+        <div class="tabs" role="tablist" aria-label="App screens">
+          <button role="tab" aria-selected="true" aria-controls="p-dashboard" id="t-dashboard">Dashboard</button>
+          <button role="tab" aria-selected="false" aria-controls="p-picker" id="t-picker">Plan</button>
+          <button role="tab" aria-selected="false" aria-controls="p-done" id="t-done">Done</button>
+          <button role="tab" aria-selected="false" aria-controls="p-issues" id="t-issues">Problems</button>
+          <button role="tab" aria-selected="false" aria-controls="p-history" id="t-history">History</button>
+          <button role="tab" aria-selected="false" aria-controls="p-newpair" id="t-newpair">New pair</button>
+        </div>
+
+        <div class="panel" role="tabpanel" id="p-dashboard" aria-labelledby="t-dashboard">
+          <figure class="term">
+            <div class="term-bar"><i></i><i></i><i></i><span>btpair — backup pairs</span></div>
+            <div class="term-body"><div class="term-fit"><pre class="term-screen" style="--rows:32">  <span class="t0"><i>◆</i> btpair</span><span class="t1">  <i>›</i>  </span><span class="t2">backup pairs</span>                                                              <span class="t36">dev mode</span><span class="t1">  ·  </span><span class="t3">5 drives</span>
+
+  <span class="t32">╭──────────────────────────────────────────────────────────────────────────────────────────────────────────╮</span>
+  <span class="t32">│</span> <span class="t32"><i>▸</i> </span><span class="t30">work</span>  <span class="t4">Work SSDs</span>                                                                  <span class="t37"><i>●</i> ready · 1 pending</span>   <span class="t32">│</span>
+  <span class="t32">│</span>                                                                                                          <span class="t32">│</span>
+  <span class="t32">│</span>   <span class="t5">MAIN     </span><span class="t2">WORK-MAIN</span>         <span class="t6">━━━━━━━</span><span class="t33">━━━━━━━━━━━━━━━━━━━━━━━━━━</span>  <span class="t4">485.3 MB used</span><span class="t3"> · </span><span class="t2">1.7 GB free</span>              <span class="t32">│</span>
+  <span class="t32">│</span>   <span class="t5">REPLICA  </span><span class="t2">WORK-REPLICA</span>      <span class="t6">━━━━━━━━━</span><span class="t33">━━━━━━━━━━━━━━━━━━━━━━━━</span>  <span class="t4">566.0 MB used</span><span class="t3"> · </span><span class="t2">1.6 GB free</span>              <span class="t32">│</span>
+  <span class="t32">│</span>                                                                                                          <span class="t32">│</span>
+  <span class="t32">│</span>   <span class="t36">! partial</span><span class="t3">  just now</span><span class="t1">  ·  </span><span class="t4">1 copied, 0 deleted, 90.0 MB</span><span class="t1">  ·  </span><span class="t3">last good just now</span>                            <span class="t32">│</span>
+  <span class="t32">╰──────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>
+  <span class="t1">╭──────────────────────────────────────────────────────────────────────────────────────────────────────────╮</span>
+  <span class="t1">│</span>   <span class="t30">media</span>  <span class="t4">Music &amp; films</span>                                                         <span class="t5"><i>●</i> replica not connected</span>   <span class="t1">│</span>
+  <span class="t1">│</span>                                                                                                          <span class="t1">│</span>
+  <span class="t1">│</span>   <span class="t5">MAIN     </span><span class="t2">MEDIA-MAIN</span>        <span class="t6">━━━━━</span><span class="t33">━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>  <span class="t4">306.2 MB used</span><span class="t3"> · </span><span class="t2">1.8 GB free</span>              <span class="t1">│</span>
+  <span class="t1">│</span>   <span class="t5">REPLICA  </span><span class="t3">not connected</span>                                                                                 <span class="t1">│</span>
+  <span class="t1">│</span>                                                                                                          <span class="t1">│</span>
+  <span class="t1">│</span>   <span class="t3">never synchronized</span>                                                                                     <span class="t1">│</span>
+  <span class="t1">╰──────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>
+
+  <span class="t5">UNPAIRED DRIVES</span>
+    <span class="t2">BLANK-A</span>            <span class="t6">━</span><span class="t33">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>  <span class="t4">6 B used</span><span class="t3"> · </span><span class="t2">2.1 GB free</span>
+    <span class="t2">BLANK-B</span>            <span class="t33">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>  <span class="t4">0 B used</span><span class="t3"> · </span><span class="t2">2.1 GB free</span>
+
+
+
+
+
+
+
+
+  <span class="t1">────────────────────────────────────────────────────────────────────────────────────────────────────────────</span>
+  <span class="t35"><i>↑</i><i>↓</i></span> <span class="t3">select</span><span class="t1">  ·  </span><span class="t35">enter</span> <span class="t3">back up</span><span class="t1">  ·  </span><span class="t35">d</span> <span class="t3">dry run</span><span class="t1">  ·  </span><span class="t35">h</span> <span class="t3">history</span><span class="t1">  ·  </span><span class="t35">n</span> <span class="t3">new pair</span><span class="t1">  ·  </span><span class="t35">r</span> <span class="t3">rescan</span><span class="t1">  ·  </span><span class="t35">q</span> <span class="t3">quit</span></pre></div></div>
+          </figure>
+          <p class="caption">Every connected pair at a glance: used and free space on both drives, the last run's result, and anything pending. Pairs with a drive missing say so instead of failing later.</p>
+        </div>
+        <div class="panel" role="tabpanel" id="p-picker" aria-labelledby="t-picker" hidden>
+          <figure class="term">
+            <div class="term-bar"><i></i><i></i><i></i><span>btpair — work · plan backup</span></div>
+            <div class="term-body"><div class="term-fit"><pre class="term-screen" style="--rows:32">  <span class="t0"><i>◆</i> btpair</span><span class="t1">  <i>›</i>  </span><span class="t2">work</span><span class="t1">  <i>›</i>  </span><span class="t2">plan backup</span>                                                 <span class="t3">WORK-MAIN  <i>→</i>  WORK-REPLICA</span>
+
+  <span class="t5">EXTRA STEPS</span>                                                           <span class="t3">run on the main drive before mirroring</span>
+  <span class="t32"><i>▸</i> </span><span class="t1">[ ]</span>  <span class="t30">Flaky step (demo)</span>        <span class="t3">always fails, to show how step errors are reported</span>         <span class="t31"><i>●</i> </span><span class="t4">runs every time</span>
+    <span class="t32">[<i>✓</i>]</span>  <span class="t2">Write file inventory</span>     <span class="t3">lists every file on the main drive into .backuptool/ste<i>…</i></span>   <span class="t31"><i>●</i> </span><span class="t4">runs every time</span>
+    <span class="t32">[<i>✓</i>]</span>  <span class="t2">Export notes</span>             <span class="t3">pretend export; skipped when it ran in the las<i>…</i></span>   <span class="t31"><i>●</i> </span><span class="t4">last export over 10m ago</span>
+
+  <span class="t5">MIRROR</span>
+    <span class="t3">[<i>■</i>]</span>  <span class="t2">Mirror main <i>→</i> replica</span>    <span class="t3">one-way rsync; replica changes go to trash</span>                            <span class="t3">always</span>
+
+  <span class="t5">OPTIONS</span>
+    <span class="t1">[ ]</span>  <span class="t2">Dry run</span>                  <span class="t3">analyze only, write nothing to either drive</span>
+    <span class="t1">[ ]</span>  <span class="t2">Verify by checksum</span>       <span class="t3">compare file contents, not just size &amp; date (reads every file)</span>
+    <span class="t1">[ ]</span>  <span class="t2">Allow large deletions</span>    <span class="t3">permit deleting more than 25% of the replica</span>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <span class="t1">────────────────────────────────────────────────────────────────────────────────────────────────────────────</span>
+  <span class="t35"><i>↑</i><i>↓</i></span> <span class="t3">move</span><span class="t1">  ·  </span><span class="t35">space</span> <span class="t3">toggle</span><span class="t1">  ·  </span><span class="t35">a</span> <span class="t3">all/none</span><span class="t1">  ·  </span><span class="t35">u</span> <span class="t3">only needed</span><span class="t1">  ·  </span><span class="t35">enter</span> <span class="t3">start backup</span><span class="t1">  ·  </span><span class="t35">esc</span> <span class="t3">back</span></pre></div></div>
+          </figure>
+          <p class="caption">Choose extra steps before each run. Each one has already checked whether it has work to do. Your choices are remembered per pair.</p>
+        </div>
+        <div class="panel" role="tabpanel" id="p-done" aria-labelledby="t-done" hidden>
+          <figure class="term">
+            <div class="term-bar"><i></i><i></i><i></i><span>btpair — work · backup</span></div>
+            <div class="term-body"><div class="term-fit"><pre class="term-screen" style="--rows:31">  <span class="t0"><i>◆</i> btpair</span><span class="t1">  <i>›</i>  </span><span class="t2">work</span><span class="t1">  <i>›</i>  </span><span class="t2">backup</span>                                                                          <span class="t3"><i>⏱</i> </span><span class="t4">0:14</span>
+
+  <span class="t38"> </span><span class="t39"><i>✓</i> COMPLETE</span><span class="t38"> </span>  <span class="t4">The replica is an exact mirror of the main drive.</span>
+
+  <span class="t5">PHASES</span>                               <span class="t1">│</span> <span class="t5">SUMMARY</span>
+  <span class="t6"><i>✓</i></span> <span class="t2">Preflight checks</span>              <span class="t3">10ms</span> <span class="t1">│</span> <span class="t3">copied        </span><span class="t2">120 files</span><span class="t3">  ·  </span><span class="t2">183.2 MB</span>
+    <span class="t3">WORK-MAIN <i>→</i> WORK-REPLICA</span>           <span class="t1">│</span> <span class="t3">deleted       </span><span class="t2">18 entries</span><span class="t3">  (kept in replica trash)</span>
+  <span class="t6"><i>✓</i></span> <span class="t2">+ Write file inventory</span>       <span class="t3">421ms</span> <span class="t1">│</span> <span class="t3">main holds    </span><span class="t2">427 entries</span><span class="t3">  ·  </span><span class="t2">395.3 MB</span>
+    <span class="t3">inventory: 380 files</span>               <span class="t1">│</span> <span class="t3">extra steps   </span><span class="t6">2 ok</span>
+  <span class="t6"><i>✓</i></span> <span class="t2">+ Export notes</span>                <span class="t3">1.2s</span> <span class="t1">│</span> <span class="t3">problems      </span><span class="t6">no errors</span>
+    <span class="t3">exported 20 notes</span>                  <span class="t1">│</span>
+  <span class="t3"><i>–</i></span> <span class="t3">Lock main drive read-only</span>          <span class="t1">│</span> <span class="t5">DRIVES</span>
+    <span class="t3">dev drive</span>                          <span class="t1">│</span> <span class="t5">MAIN     </span><span class="t2">WORK-MAIN</span>     <span class="t6">━━━━</span><span class="t33">━━━━━━━━━━━━━━━━━━</span>  <span class="t2">1.8 GB free</span>
+  <span class="t6"><i>✓</i></span> <span class="t2">Analyze changes</span>               <span class="t3">78ms</span> <span class="t1">│</span> <span class="t5">REPLICA  </span><span class="t2">WORK-REPLICA</span>  <span class="t6">━━━━━</span><span class="t33">━━━━━━━━━━━━━━━━━</span>  <span class="t2">1.7 GB free</span>
+    <span class="t3">120 to copy · 18 to delete · 183.<i>…</i></span> <span class="t1">│</span>
+  <span class="t6"><i>✓</i></span> <span class="t2">Mirror main <i>→</i> replica</span>        <span class="t3">12.1s</span> <span class="t1">│</span>
+    <span class="t3">120 copied · 18 deleted · 183.2 MB</span> <span class="t1">│</span>
+  <span class="t6"><i>✓</i></span> <span class="t2">Write metadata</span>                <span class="t3">39ms</span> <span class="t1">│</span>
+    <span class="t3">state saved on both drives</span>         <span class="t1">│</span>
+
+  <span class="t1">────────────────────────────────────────────────────────────────────────────────────────────────────────────</span>
+  <span class="t34">Activity</span>    <span class="t3">Problems 0</span>
+  <span class="t1">17:40:40</span>  <span class="t31">+ </span><span class="t4">Projects/dune/src/file_5.dat</span>
+  <span class="t1">17:40:40</span>  <span class="t31">+ </span><span class="t4">Projects/dune/src/file_6.dat</span>
+  <span class="t1">17:40:40</span>  <span class="t31">+ </span><span class="t4">Projects/dune/src/file_7.dat</span>
+  <span class="t1">17:40:40</span>  <span class="t31">+ </span><span class="t4">Projects/dune/src/file_8.dat</span>
+  <span class="t1">17:40:40</span>  <span class="t31">+ </span><span class="t4">Projects/dune/src/file_9.dat</span>
+  <span class="t1">17:40:40</span>  <span class="t31">+ </span><span class="t4">Video/drone-flight.mp4</span>
+  <span class="t1">17:40:46</span>  <span class="t31">+ </span><span class="t4">Video/interview-raw.mov</span>
+  <span class="t1">────────────────────────────────────────────────────────────────────────────────────────────────────────────</span>
+  <span class="t35">enter</span> <span class="t3">back to pairs</span><span class="t1">  ·  </span><span class="t35">tab</span> <span class="t3">activity/problems</span><span class="t1">  ·  </span><span class="t35"><i>↑</i><i>↓</i></span> <span class="t3">scroll</span><span class="t1">  ·  </span><span class="t35">q</span> <span class="t3">quit</span></pre></div></div>
+          </figure>
+          <p class="caption">A clear verdict and a summary: what was copied, what moved to the replica's trash, and how each phase went.</p>
+        </div>
+        <div class="panel" role="tabpanel" id="p-issues" aria-labelledby="t-issues" hidden>
+          <figure class="term">
+            <div class="term-bar"><i></i><i></i><i></i><span>btpair — work · backup</span></div>
+            <div class="term-body"><div class="term-fit"><pre class="term-screen" style="--rows:31">  <span class="t0"><i>◆</i> btpair</span><span class="t1">  <i>›</i>  </span><span class="t2">work</span><span class="t1">  <i>›</i>  </span><span class="t2">backup</span>                                                                          <span class="t3"><i>⏱</i> </span><span class="t4">0:08</span>
+
+  <span class="t40"> </span><span class="t41">! COMPLETED WITH ISSUES</span><span class="t40"> </span>  <span class="t4">1 item(s) are pending and will be retried next run.</span>
+
+  <span class="t5">PHASES</span>                               <span class="t1">│</span> <span class="t5">SUMMARY</span>
+  <span class="t6"><i>✓</i></span> <span class="t2">Preflight checks</span>              <span class="t3">10ms</span> <span class="t1">│</span> <span class="t3">copied        </span><span class="t2">1 files</span><span class="t3">  ·  </span><span class="t2">90.0 MB</span>
+    <span class="t3">WORK-MAIN <i>→</i> WORK-REPLICA</span>           <span class="t1">│</span> <span class="t3">deleted       </span><span class="t2">0 entries</span><span class="t3">  (kept in replica trash)</span>
+  <span class="t42"><i>✗</i></span> <span class="t2">+ Flaky step (demo)</span>           <span class="t3">1.0s</span> <span class="t1">│</span> <span class="t3">main holds    </span><span class="t2">428 entries</span><span class="t3">  ·  </span><span class="t2">485.3 MB</span>
+    <span class="t42">exit status 1: connection refused</span>  <span class="t1">│</span> <span class="t3">extra steps   </span><span class="t6">1 ok</span><span class="t3">  ·  </span><span class="t42">1 failed</span><span class="t3">  ·  1 up to date</span>
+  <span class="t6"><i>✓</i></span> <span class="t2">+ Write file inventory</span>       <span class="t3">494ms</span> <span class="t1">│</span> <span class="t3">problems      </span><span class="t42">1 error</span>
+    <span class="t3">inventory: 401 files</span>               <span class="t1">│</span> <span class="t3">pending       </span><span class="t36">1 item(s) to retry</span>
+  <span class="t3"><i>–</i></span> <span class="t3">+ Export notes</span>                     <span class="t1">│</span>
+    <span class="t3">exported 0m ago</span>                    <span class="t1">│</span> <span class="t5">DRIVES</span>
+  <span class="t3"><i>–</i></span> <span class="t3">Lock main drive read-only</span>          <span class="t1">│</span> <span class="t5">MAIN     </span><span class="t2">WORK-MAIN</span>     <span class="t6">━━━━━</span><span class="t33">━━━━━━━━━━━━━━━━━</span>  <span class="t2">1.7 GB free</span>
+    <span class="t3">dev drive</span>                          <span class="t1">│</span> <span class="t5">REPLICA  </span><span class="t2">WORK-REPLICA</span>  <span class="t6">━━━━━━</span><span class="t33">━━━━━━━━━━━━━━━━</span>  <span class="t2">1.6 GB free</span>
+  <span class="t6"><i>✓</i></span> <span class="t2">Analyze changes</span>               <span class="t3">90ms</span> <span class="t1">│</span>
+    <span class="t3">1 to copy · 0 to delete · 90.0 MB</span>  <span class="t1">│</span>
+  <span class="t6"><i>✓</i></span> <span class="t2">Mirror main <i>→</i> replica</span>         <span class="t3">5.9s</span> <span class="t1">│</span>
+    <span class="t3">1 copied · 0 deleted · 90.0 MB</span>     <span class="t1">│</span>
+  <span class="t6"><i>✓</i></span> <span class="t2">Write metadata</span>                <span class="t3">26ms</span> <span class="t1">│</span>
+    <span class="t3">state saved on both drives</span>         <span class="t1">│</span>
+
+  <span class="t1">────────────────────────────────────────────────────────────────────────────────────────────────────────────</span>
+  <span class="t3">Activity</span>    <span class="t34">Problems</span><span class="t43"> </span><span class="t34">2</span>
+  <span class="t1">17:40:58</span>  <span class="t36">! connection refused</span>
+  <span class="t1">17:40:58</span>  <span class="t42"><i>✗</i> exit status 1: connection refused</span>
+
+
+
+  <span class="t1">────────────────────────────────────────────────────────────────────────────────────────────────────────────</span>
+  <span class="t35">enter</span> <span class="t3">back to pairs</span><span class="t1">  ·  </span><span class="t35">tab</span> <span class="t3">activity/problems</span><span class="t1">  ·  </span><span class="t35"><i>↑</i><i>↓</i></span> <span class="t3">scroll</span><span class="t1">  ·  </span><span class="t35">q</span> <span class="t3">quit</span></pre></div></div>
+          </figure>
+          <p class="caption">A failing step doesn't stop the mirror. It's reported, recorded as pending on both drives, and offered again next time.</p>
+        </div>
+        <div class="panel" role="tabpanel" id="p-history" aria-labelledby="t-history" hidden>
+          <figure class="term">
+            <div class="term-bar"><i></i><i></i><i></i><span>btpair — work · history</span></div>
+            <div class="term-body"><div class="term-fit"><pre class="term-screen" style="--rows:32">  <span class="t0"><i>◆</i> btpair</span><span class="t1">  <i>›</i>  </span><span class="t2">work</span><span class="t1">  <i>›</i>  </span><span class="t2">history</span>                                                                         <span class="t3">2 runs</span>
+
+  <span class="t5">  STARTED             RESULT            TIME      COPIED    DELETED        DATA  STEPS</span>
+  <span class="t44"><i>▸</i> </span>Sat 17 Oct 17:40    <span class="t36">! partial   </span>      7.6s           1          0     90.0 MB  3<span class="t45">                          </span>
+    <span class="t4">Sat 17 Oct 17:40    </span><span class="t6"><i>✓</i> synced    </span>     13.9s         120         18    183.2 MB  2
+
+  <span class="t1">────────────────────────────────────────────────────────────────────────────────────────────────────────────</span>
+  <span class="t36">! PARTIAL</span><span class="t3">   run 20261017-174057.419  ·  host Oleksandrs-MacBook-Pro.local</span>
+
+  <span class="t5">EXTRA STEPS</span>
+    <span class="t42"><i>✗</i></span> <span class="t2">Flaky step (demo)</span><span class="t3">  1.0s  exit status 1: connection refused</span>
+    <span class="t6"><i>✓</i></span> <span class="t2">Write file inventory</span><span class="t3">  495ms  inventory: 401 files</span>
+    <span class="t3"><i>–</i></span> <span class="t2">Export notes</span><span class="t3">  15ms  exported 0m ago</span>
+
+  <span class="t5">PENDING</span>
+    <span class="t36"><i>•</i> step </span><span class="t2">flaky</span><span class="t3">  exit status 1: connection refused</span>
+
+  <span class="t5">ERRORS (1)</span>
+    <span class="t42"><i>✗</i> </span><span class="t4">exit status 1: connection refused</span>
+
+  <span class="t5">LOG</span>
+    <span class="t3">17:40:57 contacting server<i>…</i></span>
+    <span class="t3">17:40:58 warn: connection refused</span>
+    <span class="t3">17:40:58 error: exit status 1: connection refused</span>
+    <span class="t3">17:40:58 inventory: 401 files</span>
+
+
+
+
+
+  <span class="t1">────────────────────────────────────────────────────────────────────────────────────────────────────────────</span>
+  <span class="t35"><i>↑</i><i>↓</i></span> <span class="t3">select run</span><span class="t1">  ·  </span><span class="t35">J/K</span> <span class="t3">scroll details</span><span class="t1">  ·  </span><span class="t35">esc</span> <span class="t3">back</span></pre></div></div>
+          </figure>
+          <p class="caption">Every run, read straight from the drives: results, timings, step outcomes, errors and the full log.</p>
+        </div>
+        <div class="panel" role="tabpanel" id="p-newpair" aria-labelledby="t-newpair" hidden>
+          <figure class="term">
+            <div class="term-bar"><i></i><i></i><i></i><span>btpair — new pair</span></div>
+            <div class="term-body"><div class="term-fit"><pre class="term-screen" style="--rows:32">  <span class="t0"><i>◆</i> btpair</span><span class="t1">  <i>›</i>  </span><span class="t2">new pair</span>                                                                              <span class="t32"><i>●</i></span> <span class="t32"><i>●</i></span> <span class="t32"><i>●</i></span> <span class="t32"><i>●</i></span> <span class="t31"><i>●</i></span>
+
+  <span class="t6"><i>✓</i> </span><span class="t3">main      </span><span class="t2">BLANK-A</span>
+  <span class="t6"><i>✓</i> </span><span class="t3">replica   </span><span class="t2">BLANK-B</span>
+  <span class="t6"><i>✓</i> </span><span class="t3">name      </span><span class="t2">archive</span>
+  <span class="t6"><i>✓</i> </span><span class="t3">label     </span><span class="t2">Archive SSDs (cold storage)</span>
+
+  <span class="t30">Ready to pair</span>
+
+  <span class="t4">btpair will write a small </span><span class="t2">.backuptool/</span><span class="t4"> folder to the root of both drives.</span>
+  <span class="t4">No other files are touched until you run a backup.</span>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <span class="t1">────────────────────────────────────────────────────────────────────────────────────────────────────────────</span>
+  <span class="t35">enter</span> <span class="t3">create pair</span><span class="t1">  ·  </span><span class="t35">esc</span> <span class="t3">back</span></pre></div></div>
+          </figure>
+          <p class="caption">Pairing takes four answers. Nothing but a small metadata folder is written until you run a backup.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── safety ───────────────────────────────────────────────────── -->
+    <section id="safety" class="section">
+      <div class="wrap">
+        <p class="kicker">Safety</p>
+        <h2>Built not to lose your data</h2>
+        <p class="sub">Each guarantee is enforced in code and pinned by an automated test. The tests themselves were checked by deliberately breaking every mechanism and confirming they fail.</p>
+        <div class="cards">
+          <article class="card">
+            <div class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            </div>
+            <h3>The main drive is read-only</h3>
+            <p>Before copying, btpair remounts the main drive read-only and verifies it. Even a bug can't write to it.</p>
+          </article>
+          <article class="card">
+            <div class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
+            </div>
+            <h3>Nothing is deleted outright</h3>
+            <p>Files removed or overwritten on the replica move to <code>.backuptool/trash/&lt;run&gt;</code>. The last few runs are kept.</p>
+          </article>
+          <article class="card">
+            <div class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M12 8v5M12 16v.5"/></svg>
+            </div>
+            <h3>Suspicious runs stop early</h3>
+            <p>An empty main drive, a replica short on space, or a run that would delete more than 25% of the replica all stop before anything changes.</p>
+          </article>
+          <article class="card">
+            <div class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 12h.01M11 12h6"/></svg>
+            </div>
+            <h3>It knows its drives</h3>
+            <p>Drives are matched by volume UUID and re-checked right before syncing. Cloned metadata, two mains or a swapped drive block the pair.</p>
+          </article>
+          <article class="card">
+            <div class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 7v5l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+            </div>
+            <h3>Interruptions are visible</h3>
+            <p>Both drives are marked “in progress” before anything changes, so a run that died midway is flagged and completed next time.</p>
+          </article>
+          <article class="card">
+            <div class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <h3>Look before you leap</h3>
+            <p>A dry run previews every change without writing a byte. Checksum mode compares contents when size and date can't be trusted.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── extra steps ──────────────────────────────────────────────── -->
+    <section id="steps" class="section section-alt">
+      <div class="wrap split">
+        <div>
+          <p class="kicker">Extra steps</p>
+          <h2>Backups are more than copying files</h2>
+          <p class="sub">Steps run against the main drive before mirroring, so whatever they produce reaches the replica too. Each one plans first and keeps its own state, so repeat runs only do new work.</p>
+          <ul class="ticks">
+            <li>Prototype a step in config as a shell command — no recompiling</li>
+            <li>Report progress with simple <code>::progress</code> and <code>::item</code> lines</li>
+            <li>Skip work that's already done with <code>skip_if</code></li>
+            <li>Promote it to Go when it grows up</li>
+          </ul>
+          <div class="chips">
+            <span class="chip">GitHub repositories <em>next</em></span>
+            <span class="chip">Apple Photos library <em>next</em></span>
+          </div>
+        </div>
+        <div class="code-card">
+          <div class="code-head"><span>~/.config/btpair/config.toml</span><button class="copy" data-copy-target="code-step">Copy</button></div>
+<pre id="code-step"><code><span class="c-sec">[steps.notes]</span>
+<span class="c-key">type</span>    = <span class="c-str">"shell"</span>
+<span class="c-key">title</span>   = <span class="c-str">"Export notes"</span>
+<span class="c-key">default</span> = <span class="c-lit">true</span>
+
+<span class="c-com"># exit 0 = up to date; the output becomes the summary</span>
+<span class="c-key">skip_if</span> = <span class="c-str">'''
+test -f "$BT_STATE_DIR/done" &amp;&amp; echo "exported today"
+'''</span>
+
+<span class="c-key">run</span> = <span class="c-str">'''
+echo "::progress 1 2"
+export-notes --to "$BT_MAIN/Notes"
+echo "::progress 2 2"
+touch "$BT_STATE_DIR/done"
+echo "exported 42 notes"     # last line = result
+'''</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── on the drive ─────────────────────────────────────────────── -->
+    <section class="section">
+      <div class="wrap split split-rev">
+        <div class="code-card">
+          <div class="code-head"><span>/Volumes/WORK-REPLICA</span></div>
+<pre><code><span class="c-sec">.backuptool/</span>
+├── identity.json      <span class="c-com">pair, role, own + peer UUID</span>
+├── state.json         <span class="c-com">last run: status, stats, pending</span>
+├── runs/
+│   └── 20261017-161644.494.json   <span class="c-com">full record + log</span>
+├── steps/             <span class="c-com">per-step state (main drive)</span>
+└── trash/
+    └── 20261017-161644.494/       <span class="c-com">what the replica lost</span></code></pre>
+        </div>
+        <div>
+          <p class="kicker">On the drive</p>
+          <h2>The drives remember, not the laptop</h2>
+          <p class="sub">All metadata lives in a plain-JSON folder at the root of each drive, never copied between them. It's what tells btpair which drive is which, whether the last run finished, and what's still pending — on any Mac you plug them into.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── get started ──────────────────────────────────────────────── -->
+    <section id="start" class="section section-alt">
+      <div class="wrap narrow">
+        <p class="kicker">Get started</p>
+        <h2>Up and running in a minute</h2>
+        <div class="code-card">
+          <div class="code-head"><span>Terminal</span><button class="copy" data-copy-target="code-install">Copy</button></div>
+<pre id="code-install"><code><span class="c-com"># macOS ships an old rsync; btpair needs 3.1+</span>
+brew install rsync
+
+git clone <span class="js-github-clone">https://github.com/tryshchenko/btpair.git</span>
+cd btpair
+make build
+./bin/btpair</code></pre>
+        </div>
+        <p class="sub small">No spare drives handy? <code>make debug &amp;&amp; make dev</code> builds folders that act like drives — a drifted pair, an unplugged one and two blanks — so you can try everything safely.</p>
+        <div class="cta cta-center">
+          <a class="btn btn-primary js-github" href="#">View on GitHub</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <span class="logo"><span class="logo-mark">◆</span> btpair</span>
+      <span class="muted">Main/replica drive backups for macOS · Go · rsync</span>
+      <a class="js-github" href="#">GitHub</a>
+    </div>
+  </footer>
+
+  <script src="assets/site.js"></script>
+</body>
+</html>

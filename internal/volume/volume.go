@@ -24,7 +24,7 @@ import (
 
 	"howett.net/plist"
 
-	"github.com/tryshchenko/backup-tool/internal/meta"
+	"github.com/tryshchenko/btpair/internal/meta"
 )
 
 // DevCapacity is the simulated size of a dev-mode drive (a var so tests can
@@ -270,7 +270,7 @@ func diskutil(ctx context.Context, args ...string) error {
 	return nil
 }
 
-// HasContent reports whether the drive holds anything besides bt metadata
+// HasContent reports whether the drive holds anything besides btpair metadata
 // and macOS housekeeping. Used to refuse syncing from an empty main.
 func HasContent(path string) bool {
 	entries, err := os.ReadDir(path)

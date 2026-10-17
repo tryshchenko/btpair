@@ -1,4 +1,4 @@
-// Package tui is bt's interactive terminal interface.
+// Package tui is btpair's interactive terminal interface.
 package tui
 
 import (
@@ -9,9 +9,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/tryshchenko/backup-tool/internal/config"
-	"github.com/tryshchenko/backup-tool/internal/engine"
-	"github.com/tryshchenko/backup-tool/internal/volume"
+	"github.com/tryshchenko/btpair/internal/config"
+	"github.com/tryshchenko/btpair/internal/engine"
+	"github.com/tryshchenko/btpair/internal/volume"
 )
 
 type Options struct {

@@ -7,9 +7,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/tryshchenko/backup-tool/internal/engine"
-	"github.com/tryshchenko/backup-tool/internal/meta"
-	"github.com/tryshchenko/backup-tool/internal/volume"
+	"github.com/tryshchenko/btpair/internal/engine"
+	"github.com/tryshchenko/btpair/internal/meta"
+	"github.com/tryshchenko/btpair/internal/volume"
 )
 
 type dashModel struct {
@@ -242,27 +242,32 @@ func (a *App) driveRow(role string, v *volume.Volume, incoming int64, w int) str
 	if role != "" {
 		roleCol = sLabel.Render(padRight(strings.ToUpper(role), 9))
 	}
-	nameW := min(22, max(10, w/6))
+	nameW := min(22, max(12, w/6))
 	name := padRight(sText.Render(truncMid(v.Name, nameW)), nameW+2)
 
 	sp, ok := a.spaces[v.UUID]
 	if !ok {
 		return roleCol + name + sMuted.Render("measuring…")
 	}
+	// Every row reserves the same room for annotations (like "+1.2 GB") so
+	// bars line up. When space is tight, the stats shrink to just the free
+	// space (the bar already shows how full the drive is); only when even
+	// that does not fit is the bar dropped.
+	const annotationW = 11
+	fixed := lipgloss.Width(roleCol) + nameW + 2 + 2
 	stats := sSub.Render(humanBytes(int64(sp.Used()))+" used") +
 		sMuted.Render(" · ") + sText.Render(humanBytes(int64(sp.Free))+" free")
-	baseW := lipgloss.Width(stats)
+	barW := min(44, w-fixed-lipgloss.Width(stats)-annotationW)
+	if barW < 12 {
+		stats = sText.Render(humanBytes(int64(sp.Free)) + " free")
+		barW = min(44, w-fixed-lipgloss.Width(stats)-annotationW)
+	}
 	if incoming > 0 {
 		stats += sAccent2.Render("  +" + humanBytes(incoming))
 	}
 	if v.ReadOnly {
 		stats += "  " + sWarn.Render("read-only")
 	}
-	// Every row reserves the same room for annotations (like "+1.2 GB") so
-	// bars line up; when even that does not fit, drop the bar.
-	const annotationW = 11
-	fixed := lipgloss.Width(roleCol) + nameW + 2 + 2
-	barW := min(44, w-fixed-baseW-annotationW)
 	if barW < 6 {
 		return roleCol + name + stats
 	}

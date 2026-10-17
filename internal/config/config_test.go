@@ -74,3 +74,25 @@ func TestDefaultExcludesCoverMacOSHousekeeping(t *testing.T) {
 		t.Fatalf("missing default excludes: %v", want)
 	}
 }
+
+func TestDefaultPathFallsBackToOldName(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("BT_CONFIG", "")
+	newPath := filepath.Join(home, ".config", "btpair", "config.toml")
+	oldPath := filepath.Join(home, ".config", "bt", "config.toml")
+
+	if got := DefaultPath(); got != newPath {
+		t.Fatalf("no config anywhere: got %s, want %s", got, newPath)
+	}
+	os.MkdirAll(filepath.Dir(oldPath), 0o755)
+	os.WriteFile(oldPath, nil, 0o644)
+	if got := DefaultPath(); got != oldPath {
+		t.Fatalf("only old config: got %s, want %s", got, oldPath)
+	}
+	os.MkdirAll(filepath.Dir(newPath), 0o755)
+	os.WriteFile(newPath, nil, 0o644)
+	if got := DefaultPath(); got != newPath {
+		t.Fatalf("both configs: got %s, want %s", got, newPath)
+	}
+}

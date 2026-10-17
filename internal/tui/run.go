@@ -9,9 +9,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/tryshchenko/backup-tool/internal/engine"
-	"github.com/tryshchenko/backup-tool/internal/meta"
-	"github.com/tryshchenko/backup-tool/internal/rsync"
+	"github.com/tryshchenko/btpair/internal/engine"
+	"github.com/tryshchenko/btpair/internal/meta"
+	"github.com/tryshchenko/btpair/internal/rsync"
 )
 
 type phaseState struct {
@@ -257,7 +257,7 @@ func (m *runModel) view(a *App) string {
 	}
 
 	// Phases on the left, live detail on the right; stacked when narrow.
-	phasesW := 40
+	phasesW := min(40, max(36, w/3))
 	var mid string
 	if w >= 100 {
 		detailW := w - phasesW - 3
@@ -354,7 +354,7 @@ func (m *runModel) viewPhases(a *App, w int) string {
 		case !ps.end.IsZero() && ps.status != engine.StatusSkipped:
 			dur = sMuted.Render(shortDur(ps.end.Sub(ps.start)))
 		}
-		lines = append(lines, spread(icon+" "+tstyle.Render(truncEnd(title, w-12)), dur, w))
+		lines = append(lines, spread(icon+" "+tstyle.Render(truncEnd(title, w-11)), dur, w))
 		if ps.note != "" && ps.status != engine.StatusRunning {
 			st := sMuted
 			switch ps.status {

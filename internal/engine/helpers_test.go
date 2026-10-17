@@ -13,11 +13,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tryshchenko/backup-tool/internal/config"
-	"github.com/tryshchenko/backup-tool/internal/meta"
-	"github.com/tryshchenko/backup-tool/internal/rsync"
-	"github.com/tryshchenko/backup-tool/internal/steps"
-	"github.com/tryshchenko/backup-tool/internal/volume"
+	"github.com/tryshchenko/btpair/internal/config"
+	"github.com/tryshchenko/btpair/internal/meta"
+	"github.com/tryshchenko/btpair/internal/rsync"
+	"github.com/tryshchenko/btpair/internal/steps"
+	"github.com/tryshchenko/btpair/internal/volume"
 )
 
 // t0 is the mtime given to every fixture file, so identical files look
@@ -123,7 +123,7 @@ func withSteps(s ...steps.Step) func(*Request) {
 	return func(r *Request) { r.Steps = s }
 }
 
-// tree hashes every regular file under root, skipping bt metadata, into a
+// tree hashes every regular file under root, skipping btpair metadata, into a
 // sorted "path hash" listing that is easy to diff.
 func tree(t *testing.T, root string) string {
 	t.Helper()

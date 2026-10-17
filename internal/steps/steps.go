@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/tryshchenko/backup-tool/internal/config"
+	"github.com/tryshchenko/btpair/internal/config"
 )
 
 type Env struct {

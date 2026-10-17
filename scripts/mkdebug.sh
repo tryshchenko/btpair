@@ -1,12 +1,12 @@
 #!/bin/sh
-# Builds fake drives under dev/Volumes for exercising bt without real disks:
+# Builds fake drives under dev/Volumes for exercising btpair without real disks:
 #   WORK-MAIN / WORK-REPLICA   pair "work"; replica is an older, drifted copy
 #   MEDIA-MAIN                 pair "media"; its replica is "unplugged" (dev/offline)
 #   BLANK-A / BLANK-B         unpaired, for trying the new-pair wizard
 set -eu
 cd "$(dirname "$0")/.."
 ROOT=dev/Volumes
-BT=./bin/bt
+BT=./bin/btpair
 RSYNC=$(command -v /opt/homebrew/bin/rsync || command -v rsync)
 
 rm -rf dev/Volumes dev/offline

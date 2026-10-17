@@ -1,10 +1,10 @@
-# bt — main/replica drive backups
+# btpair — main/replica drive backups
 
 Mirrors a main external drive onto its replica, one way, with a TUI that shows
 what is happening and metadata on both drives recording what happened.
 
 ```
-make build        # → bin/bt   (needs Homebrew rsync ≥ 3.1: brew install rsync)
+make build        # → bin/btpair   (needs Homebrew rsync ≥ 3.1: brew install rsync)
 make debug        # build fake drives under dev/Volumes
 make dev          # run the TUI against them
 make test
@@ -31,11 +31,11 @@ CI runs the same on macOS. Real rsync runs against temporary folders acting as d
   names, rsync argument safety (direction, no `--delete-excluded`) and pairing rules.
 - **TUI**: every screen fits 80–200 columns, the drive bars align, and the key
   flows work, including the cancel confirmation.
-- **CLI**: the `bt` binary end to end: `init`, `status`, `sync` and exit codes.
+- **CLI**: the `btpair` binary end to end: `init`, `status`, `sync` and exit codes.
 
 ## How it works
 
-- **Identity lives on the drives.** `bt init` (or `n` in the TUI) writes
+- **Identity lives on the drives.** `btpair init` (or `n` in the TUI) writes
   `.backuptool/identity.json` to both drives: pair ID, role, own volume UUID,
   peer UUID. Pairs and roles are detected from that alone. Cloned metadata, two
   main drives and similar problems block the pair.
@@ -86,7 +86,7 @@ echo "did the thing"                              # last line = result summary
 The environment provides `BT_MAIN`, `BT_PAIR`, `BT_STATE_DIR` and
 `BT_DRY_RUN`. See `dev/config.toml` for more examples.
 
-## Config (`~/.config/bt/config.toml`, optional)
+## Config (`~/.config/btpair/config.toml`, optional)
 
 ```toml
 [pairs.work]
@@ -102,10 +102,10 @@ allow_writable_main = false      # skip the read-only remount (not recommended)
 ## CLI
 
 ```
-bt                                   dashboard
-bt status
-bt init --main NAME --replica NAME --pair ID [--label TEXT]
-bt sync PAIR [--dry-run] [--checksum] [--steps a,b | --all-steps] [--allow-deletes]
+btpair                                   dashboard
+btpair status
+btpair init --main NAME --replica NAME --pair ID [--label TEXT]
+btpair sync PAIR [--dry-run] [--checksum] [--steps a,b | --all-steps] [--allow-deletes]
 ```
 
 Use `--dev DIR` to treat the subfolders of `DIR` as drives. `BT_ALLOW_DMG=1`

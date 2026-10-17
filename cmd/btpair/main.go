@@ -1,4 +1,4 @@
-// Command bt mirrors main drives onto their replica drives.
+// Command btpair mirrors main drives onto their replica drives.
 package main
 
 import (
@@ -11,30 +11,30 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tryshchenko/backup-tool/internal/config"
-	"github.com/tryshchenko/backup-tool/internal/engine"
-	"github.com/tryshchenko/backup-tool/internal/meta"
-	"github.com/tryshchenko/backup-tool/internal/steps"
-	"github.com/tryshchenko/backup-tool/internal/tui"
-	"github.com/tryshchenko/backup-tool/internal/volume"
+	"github.com/tryshchenko/btpair/internal/config"
+	"github.com/tryshchenko/btpair/internal/engine"
+	"github.com/tryshchenko/btpair/internal/meta"
+	"github.com/tryshchenko/btpair/internal/steps"
+	"github.com/tryshchenko/btpair/internal/tui"
+	"github.com/tryshchenko/btpair/internal/volume"
 )
 
-const usage = `bt — main/replica drive backups
+const usage = `btpair — main/replica drive backups
 
 usage:
-  bt [flags]                      interactive dashboard
-  bt status [flags]               print pairs and their last run
-  bt init  --main NAME --replica NAME --pair ID [--label TEXT]
-  bt sync  PAIR [--dry-run] [--checksum] [--steps a,b | --all-steps] [--allow-deletes]
+  btpair [flags]                      interactive dashboard
+  btpair status [flags]               print pairs and their last run
+  btpair init  --main NAME --replica NAME --pair ID [--label TEXT]
+  btpair sync  PAIR [--dry-run] [--checksum] [--steps a,b | --all-steps] [--allow-deletes]
 
 flags:
   --dev DIR       treat each subfolder of DIR as a drive (or set BT_DEV_ROOT)
-  --config FILE   config path (default ~/.config/bt/config.toml, or BT_CONFIG)
+  --config FILE   config path (default ~/.config/btpair/config.toml, or BT_CONFIG)
 `
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
-		fmt.Fprintln(os.Stderr, "bt:", err)
+		fmt.Fprintln(os.Stderr, "btpair:", err)
 		os.Exit(1)
 	}
 }
@@ -65,7 +65,7 @@ func run(args []string) error {
 		cmd, args = args[0], args[1:]
 	}
 	var g globals
-	fs := flag.NewFlagSet("bt "+cmd, flag.ContinueOnError)
+	fs := flag.NewFlagSet("btpair "+cmd, flag.ContinueOnError)
 	fs.Usage = func() { fmt.Fprint(os.Stderr, usage) }
 	g.register(fs)
 
@@ -109,7 +109,7 @@ func run(args []string) error {
 			pairID = fs.Arg(0)
 		}
 		if pairID == "" {
-			return errors.New("sync: which pair? (bt sync PAIR)")
+			return errors.New("sync: which pair? (btpair sync PAIR)")
 		}
 		return syncPlain(&g, pairID, *dry, *stepList, *allSteps, *allowDel, *checksum)
 	case "help", "-h", "--help":

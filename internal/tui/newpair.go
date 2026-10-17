@@ -6,8 +6,8 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/tryshchenko/backup-tool/internal/engine"
-	"github.com/tryshchenko/backup-tool/internal/volume"
+	"github.com/tryshchenko/btpair/internal/engine"
+	"github.com/tryshchenko/btpair/internal/volume"
 )
 
 // newPairModel is a short wizard: choose main, choose replica, name the pair,
@@ -182,7 +182,7 @@ func (m *newPairModel) view(a *App) string {
 		b.WriteString(m.label.View() + "\n")
 	case 4:
 		b.WriteString(sBold.Render("Ready to pair") + "\n\n")
-		b.WriteString(sSub.Render("bt will write a small ") + sText.Render(".backuptool/") + sSub.Render(" folder to the root of both drives.") + "\n")
+		b.WriteString(sSub.Render("btpair will write a small ") + sText.Render(".backuptool/") + sSub.Render(" folder to the root of both drives.") + "\n")
 		b.WriteString(sSub.Render("No other files are touched until you run a backup.") + "\n")
 	}
 	if m.err != "" {

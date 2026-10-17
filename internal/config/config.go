@@ -56,7 +56,15 @@ func DefaultPath() string {
 		return p
 	}
 	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".config", "bt", "config.toml")
+	p := filepath.Join(home, ".config", "btpair", "config.toml")
+	// Before the rename the tool was called bt; keep reading its config.
+	if _, err := os.Stat(p); errors.Is(err, fs.ErrNotExist) {
+		old := filepath.Join(home, ".config", "bt", "config.toml")
+		if _, err := os.Stat(old); err == nil {
+			return old
+		}
+	}
+	return p
 }
 
 // Load returns an empty config when the file does not exist.

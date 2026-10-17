@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tryshchenko/backup-tool/internal/meta"
-	"github.com/tryshchenko/backup-tool/internal/steps"
+	"github.com/tryshchenko/btpair/internal/meta"
+	"github.com/tryshchenko/btpair/internal/steps"
 )
 
 func TestStepOutputReachesReplica(t *testing.T) {

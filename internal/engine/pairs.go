@@ -6,8 +6,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/tryshchenko/backup-tool/internal/meta"
-	"github.com/tryshchenko/backup-tool/internal/volume"
+	"github.com/tryshchenko/btpair/internal/meta"
+	"github.com/tryshchenko/btpair/internal/volume"
 )
 
 // Pair groups the connected drives that share a pair ID. Either side may be

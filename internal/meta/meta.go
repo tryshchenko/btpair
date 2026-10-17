@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tryshchenko/backup-tool/internal/fsutil"
+	"github.com/tryshchenko/btpair/internal/fsutil"
 )
 
 // Dir is the metadata directory name at a drive's root. It is always
@@ -28,7 +28,7 @@ const (
 	RoleReplica Role = "replica"
 )
 
-// Identity says who a drive is. Written once by `bt init`.
+// Identity says who a drive is. Written once by `btpair init`.
 type Identity struct {
 	Version    int       `json:"version"`
 	PairID     string    `json:"pair_id"`
@@ -113,7 +113,7 @@ func RunsDir(vol string) string      { return path(vol, "runs") }
 func TrashDir(vol string) string     { return path(vol, "trash") }
 func StepsDir(vol string) string     { return path(vol, "steps") }
 
-// LoadIdentity returns (nil, nil) when the drive is not managed by bt.
+// LoadIdentity returns (nil, nil) when the drive is not managed by btpair.
 func LoadIdentity(vol string) (*Identity, error) {
 	var id Identity
 	if err := fsutil.ReadJSON(IdentityPath(vol), &id); err != nil {
