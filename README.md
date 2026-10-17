@@ -110,3 +110,7 @@ btpair sync PAIR [--dry-run] [--checksum] [--steps a,b | --all-steps] [--allow-d
 
 Use `--dev DIR` to treat the subfolders of `DIR` as drives. `BT_ALLOW_DMG=1`
 includes mounted disk images, which is useful for testing the real diskutil path.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
