@@ -1,0 +1,61 @@
+# Config used with `make dev` (fake drives under dev/Volumes).
+
+[pairs.work]
+exclude = ["*.tmp"]
+bwlimit = "15M"            # slow the copy down so progress is watchable
+max_delete_percent = 25
+trash_keep = 3
+
+[pairs.media]
+steps = ["inventory"]
+
+# ── extra steps ───────────────────────────────────────────────────────────
+# Shell steps are the quickest way to add new steps. Built-in steps (GitHub,
+# Photos) will be registered in Go and configured the same way.
+
+[steps.inventory]
+type = "shell"
+title = "Write file inventory"
+description = "lists every file on the main drive into .backuptool/steps"
+default = true
+run = '''
+out="$BT_STATE_DIR/inventory.txt"
+find . -type f -not -path './.backuptool/*' > "$out.tmp"
+total=$(wc -l < "$out.tmp" | tr -d ' ')
+i=0
+while read -r f; do
+  i=$((i+1))
+  if [ $((i % 25)) -eq 0 ]; then echo "::progress $i $total"; echo "::item $f"; sleep 0.02; fi
+done < "$out.tmp"
+mv "$out.tmp" "$out"
+echo "::progress $total $total"
+echo "inventory: $total files"
+'''
+
+[steps.notes]
+type = "shell"
+title = "Export notes"
+description = "pretend export; skipped when it ran in the last 10 minutes"
+default = true
+skip_if = '''
+f="$BT_STATE_DIR/last"
+[ -f "$f" ] && [ $(( $(date +%s) - $(cat "$f") )) -lt 600 ] && echo "exported $(( ($(date +%s) - $(cat "$f")) / 60 ))m ago" && exit 0
+echo "last export over 10m ago"; exit 1
+'''
+run = '''
+mkdir -p "$BT_MAIN/Notes"
+for i in $(seq 1 20); do echo "::progress $i 20"; echo "::item note-$i.md"; echo "note $i" > "$BT_MAIN/Notes/note-$i.md"; sleep 0.05; done
+date +%s > "$BT_STATE_DIR/last"
+echo "exported 20 notes"
+'''
+
+[steps.flaky]
+type = "shell"
+title = "Flaky step (demo)"
+description = "always fails, to show how step errors are reported"
+default = false
+run = '''
+echo "contacting server…"; sleep 1
+echo "connection refused" >&2
+exit 1
+'''
