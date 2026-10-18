@@ -215,11 +215,10 @@ type Result struct {
 	FilesDone  int64
 	Deleted    int64
 	Errors     []string
-	FailedPath []string
+	FailedPath []string // drive-relative paths named by error lines
 }
 
 var progressLine = regexp.MustCompile(`^\s*([\d,]+)\s+(\d+)%\s+([\d.]+)([kMGT]?B)/s\s+(\S+)(?:\s+\(xfr#(\d+), (?:to|ir)-chk=(\d+)/(\d+)\))?`)
-var failedPath = regexp.MustCompile(`"([^"]+)"`)
 
 // Run performs the real sync, calling onUpdate as output arrives.
 func Run(ctx context.Context, o Options, onUpdate func(Update)) (*Result, error) {
@@ -303,6 +302,11 @@ func Run(ctx context.Context, o Options, onUpdate func(Update)) (*Result, error)
 		u.FilesDone++
 	}
 	res.Bytes, res.FilesDone, res.Deleted = u.Bytes, u.FilesDone, u.Deleted
+	for _, l := range res.Errors {
+		if pr := ParseError(l, o.Src, o.Dst); !pr.Summary && pr.Path != "" {
+			res.FailedPath = append(res.FailedPath, pr.Path)
+		}
+	}
 	res.ExitCode = exitCode(waitErr)
 	if ctx.Err() != nil {
 		return res, ctx.Err()
@@ -334,9 +338,6 @@ func recordError(line string, res *Result, u *Update, onUpdate func(Update)) {
 		return
 	}
 	res.Errors = append(res.Errors, line)
-	if m := failedPath.FindStringSubmatch(line); m != nil {
-		res.FailedPath = append(res.FailedPath, m[1])
-	}
 	u.Error = line
 	onUpdate(*u)
 	u.Error = ""

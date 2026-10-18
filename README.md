@@ -86,6 +86,21 @@ echo "did the thing"                              # last line = result summary
 The environment provides `BT_MAIN`, `BT_PAIR`, `BT_STATE_DIR` and
 `BT_DRY_RUN`. See `dev/config.toml` for more examples.
 
+### Apple Photos
+
+`scripts/steps/apple-photos.sh` copies your Photos library to the main drive.
+It first checks that every original is actually on this Mac, file by file,
+because with iCloud the database can list photos whose originals were never
+downloaded. If any are missing (photos added in the last 24 hours are allowed
+to still be downloading), or Photos is open, the step fails, the previous copy
+is left as it was, and the rest of the drive still syncs. The picker shows the
+check's result before you start.
+
+The force variant is for emergencies: it copies whatever is there and never
+deletes anything from the backup. The header of the script shows the config
+for both steps. To restore, copy the `.photoslibrary` back to an APFS disk and
+open it while holding Option as Photos launches.
+
 ## Config (`~/.config/btpair/config.toml`, optional)
 
 ```toml

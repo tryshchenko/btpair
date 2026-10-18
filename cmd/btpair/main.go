@@ -254,7 +254,11 @@ func syncPlain(g *globals, pairID string, dry bool, stepList string, all, allowD
 				pct := e.Done * 100 / e.Total
 				if pct/10 != lastPct/10 {
 					lastPct = pct
-					fmt.Printf("    %3d%%  %s / %s\n", pct, engine.HumanBytes(e.Done), engine.HumanBytes(e.Total))
+					if e.Unit == "bytes" {
+						fmt.Printf("    %3d%%  %s / %s\n", pct, engine.HumanBytes(e.Done), engine.HumanBytes(e.Total))
+					} else {
+						fmt.Printf("    %3d%%  %d / %d\n", pct, e.Done, e.Total)
+					}
 				}
 			}
 		case engine.Log:

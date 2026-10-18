@@ -2,10 +2,12 @@ package volume
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/tryshchenko/btpair/internal/meta"
 )
@@ -95,4 +97,31 @@ func names(vs []*Volume) []string {
 		out = append(out, v.Name)
 	}
 	return out
+}
+
+func TestWaitForMountRetriesSlowDrives(t *testing.T) {
+	oldFn, oldEvery := diskInfoFn, retryEvery
+	t.Cleanup(func() { diskInfoFn, retryEvery = oldFn, oldEvery })
+	retryEvery = time.Millisecond
+
+	calls := 0
+	diskInfoFn = func(ctx context.Context, dev string) (*diskInfo, error) {
+		calls++
+		switch calls {
+		case 1:
+			return nil, errors.New("diskutil info disk5s2: signal: killed") // what a busy 2 TB exFAT drive did
+		case 2:
+			return &diskInfo{}, nil // answered, but not mounted yet
+		}
+		return &diskInfo{MountPoint: "/Volumes/X", VolumeUUID: "U"}, nil
+	}
+	info, err := waitForMount(context.Background(), "disk5s2", time.Second)
+	if err != nil || info.MountPoint != "/Volumes/X" || calls != 3 {
+		t.Fatalf("info=%+v err=%v calls=%d", info, err, calls)
+	}
+
+	diskInfoFn = func(ctx context.Context, dev string) (*diskInfo, error) { return nil, errors.New("gone") }
+	if _, err := waitForMount(context.Background(), "disk5s2", 20*time.Millisecond); err == nil || !strings.Contains(err.Error(), "gone") {
+		t.Fatalf("expected the last error after giving up, got %v", err)
+	}
 }

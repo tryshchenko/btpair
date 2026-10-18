@@ -239,7 +239,9 @@ func (v *Volume) remount(ctx context.Context, readOnly bool) error {
 	if err := diskutil(ctx, append(args, v.Device)...); err != nil {
 		return err
 	}
-	info, err := DiskInfo(ctx, v.Device)
+	// A large drive that was just mounted can take a while to answer
+	// (fskit exFAT especially), so keep asking for up to a minute.
+	info, err := waitForMount(ctx, v.Device, time.Minute)
 	if err != nil {
 		return err
 	}
@@ -253,6 +255,33 @@ func (v *Volume) remount(ctx context.Context, readOnly bool) error {
 	v.ReadOnly = !info.WritableVolume
 	return nil
 }
+
+// diskInfoFn is swapped out in tests.
+var diskInfoFn = DiskInfo
+
+// waitForMount polls diskutil until the device reports a mount point.
+func waitForMount(ctx context.Context, device string, limit time.Duration) (*diskInfo, error) {
+	deadline := time.Now().Add(limit)
+	for {
+		info, err := diskInfoFn(ctx, device)
+		if err == nil && info.MountPoint != "" {
+			return info, nil
+		}
+		if err == nil {
+			err = fmt.Errorf("%s has no mount point yet", device)
+		}
+		if ctx.Err() != nil || time.Now().After(deadline) {
+			return nil, err
+		}
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.After(retryEvery):
+		}
+	}
+}
+
+var retryEvery = 2 * time.Second
 
 func diskutil(ctx context.Context, args ...string) error {
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)

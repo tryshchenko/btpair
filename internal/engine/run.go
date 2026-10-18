@@ -296,11 +296,20 @@ func (r *runner) run(ctx context.Context) {
 		if plan.FilesToCopy == 0 && plan.FilesToDelete == 0 {
 			return StatusDone, "already in sync", nil
 		}
+		if n, stuck := unlockTree(replica.Path, r.pc.Paths, meta.Dir); n > 0 || len(stuck) > 0 {
+			if n > 0 {
+				r.info("unlocked %d locked items on %s so they can be updated (Finder's Locked flag)", n, replica.Name)
+			}
+			for _, p := range stuck {
+				r.warn("could not unlock %s on %s", p, replica.Name)
+			}
+		}
 		total := plan.BytesToCopy
 		filesTotal := plan.FilesToCopy
+		problems := newProblemLog(r, mainVol.Path, replica.Path)
 		res, err := rsync.Run(ctx, opts, func(u rsync.Update) {
 			if u.Error != "" && ctx.Err() == nil { // rsync complains about SIGINT on cancel
-				r.errorf("%s", u.Error)
+				problems.add(u.Error)
 			}
 			if u.Deleting != "" {
 				r.fileEvent(KindDelete, u.Deleting)
@@ -321,17 +330,22 @@ func (r *runner) run(ctx context.Context) {
 				ID: PhaseSync, Done: res.Bytes, Total: total, Unit: "bytes",
 				Files: res.FilesDone, FilesTotal: filesTotal, Deleted: res.Deleted,
 			}, true)
+			seen := map[string]bool{}
 			for _, p := range res.FailedPath {
-				r.rec.Pending = append(r.rec.Pending, meta.PendingItem{Kind: "file", Path: p, Reason: "rsync error"})
+				if !seen[p] {
+					seen[p] = true
+					r.rec.Pending = append(r.rec.Pending, meta.PendingItem{Kind: "file", Path: p, Reason: problems.reason(p)})
+				}
 			}
 		}
+		problems.flush()
 		if err != nil {
 			return StatusFailed, "", err
 		}
 		note := fmt.Sprintf("%d copied · %d deleted · %s", res.FilesDone, res.Deleted, HumanBytes(res.Bytes))
-		if len(res.Errors) > 0 {
+		if problems.total > 0 {
 			r.partial = true
-			return StatusWarn, fmt.Sprintf("%s · %d errors", note, len(res.Errors)), nil
+			return StatusWarn, fmt.Sprintf("%s · %d errors", note, problems.total), nil
 		}
 		return StatusDone, note, nil
 	})
