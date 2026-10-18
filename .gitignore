@@ -2,3 +2,6 @@ bin/
 dev/Volumes/
 dev/offline/
 site/build/
+
+# Personal drive reconciliation tool (lists private files; never committed)
+reconcile/
