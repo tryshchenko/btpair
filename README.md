@@ -148,6 +148,18 @@ btpair empty-trash PAIR [--yes]          without --yes, only lists what would go
 Use `--dev DIR` to treat the subfolders of `DIR` as drives. `BT_ALLOW_DMG=1`
 includes mounted disk images, which is useful for testing the real diskutil path.
 
+## Companion tools (`reconcile/`)
+
+Separate from btpair, for sorting out what lives where before and after
+setting up pairs. See [reconcile/README.md](reconcile/README.md).
+
+- **Drive Reconcile:** a local web UI that scans drives into
+  `~/drive-inventory` and shows which files exist on which drives, what's
+  only on one drive, and per-folder "only here" sizes for triaging old disks.
+- **renamer:** tidies media file names with rules plus a small local
+  language model (Qwen3-1.7B via Ollama). It always proposes a plan for
+  review first, and every rename can be undone.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

@@ -3,5 +3,7 @@ dev/Volumes/
 dev/offline/
 site/build/
 
-# Personal drive reconciliation tool (lists private files; never committed)
-reconcile/
+# reconcile/: build output only (personal data lives in ~/drive-inventory)
+reconcile/web/node_modules/
+reconcile/web/dist/
+__pycache__/
