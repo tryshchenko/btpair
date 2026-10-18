@@ -59,10 +59,10 @@ func TestArgsRelativePaths(t *testing.T) {
 }
 
 func TestArgsSafetyFlags(t *testing.T) {
-	o := Options{Bin: "rsync", Src: "/M/", Dst: "/R", TrashDir: "/R/.backuptool/trash/1", Excludes: []string{"/.backuptool/", "*.tmp"}, BWLimit: "5M", Checksum: true}
+	o := Options{Bin: "rsync", Src: "/M/", Dst: "/R", TrashDir: "/R/.backuptool/trash/1", Excludes: []string{"/.backuptool/", "*.tmp"}, Perishable: []string{"._*"}, BWLimit: "5M", Checksum: true}
 	real := strings.Join(o.args(false), " ")
 	dry := strings.Join(o.args(true), " ")
-	for _, want := range []string{"--delete", "--backup", "--backup-dir=/R/.backuptool/trash/1", "--exclude=/.backuptool/", "--exclude=*.tmp", "--checksum", "--bwlimit=5M", "--info=progress2"} {
+	for _, want := range []string{"--delete", "--backup", "--backup-dir=/R/.backuptool/trash/1", "--exclude=/.backuptool/", "--exclude=*.tmp", "--filter=-p ._*", "--checksum", "--bwlimit=5M", "--info=progress2"} {
 		if !strings.Contains(real, want) {
 			t.Errorf("real args missing %s: %s", want, real)
 		}

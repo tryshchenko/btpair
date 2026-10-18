@@ -51,9 +51,13 @@ type Options struct {
 	Src, Dst string   // drive roots
 	Paths    []string // relative to Src; empty = whole drive
 	Excludes []string
-	TrashDir string // absolute; empty disables --backup
-	BWLimit  string
-	Checksum bool // compare content, not just size and mtime (slow)
+	// Perishable excludes are never copied, but don't keep a folder alive
+	// on the replica: a folder deleted on main is removed even if it still
+	// holds such files (exFAT's "._" metadata files, Finder's .DS_Store).
+	Perishable []string
+	TrashDir   string // absolute; empty disables --backup
+	BWLimit    string
+	Checksum   bool // compare content, not just size and mtime (slow)
 }
 
 func (o Options) args(dryRun bool) []string {
@@ -78,6 +82,9 @@ func (o Options) args(dryRun bool) []string {
 	}
 	for _, e := range o.Excludes {
 		a = append(a, "--exclude="+e)
+	}
+	for _, e := range o.Perishable {
+		a = append(a, "--filter=-p "+e)
 	}
 	src := strings.TrimSuffix(o.Src, "/")
 	dst := strings.TrimSuffix(o.Dst, "/") + "/"
@@ -104,6 +111,17 @@ type Plan struct {
 	BytesToDelete int64    // size of the replica files that would be deleted
 	Deletions     []string // sample, capped
 	Copies        []string // sample, capped
+	// Every regular file that would be deleted from the replica, and every
+	// regular file that would be newly created on it: the raw material for
+	// rename detection. Paths are relative to the drive roots.
+	Gone  []Entry
+	Added []Entry
+}
+
+// Entry is a file path (relative to the drive root) and its size.
+type Entry struct {
+	Path string
+	Size int64
 }
 
 var statLine = regexp.MustCompile(`^(Number of files|Number of created files|Number of deleted files|Number of regular files transferred|Total file size|Total transferred file size):\s*([\d,]+)`)
@@ -139,11 +157,13 @@ func Analyze(ctx context.Context, o Options) (*Plan, error) {
 				if !strings.HasSuffix(item.Name, "/") {
 					if fi, err := os.Lstat(filepath.Join(o.Dst, item.Name)); err == nil && fi.Mode().IsRegular() {
 						p.BytesToDelete += fi.Size()
+						p.Gone = append(p.Gone, Entry{item.Name, fi.Size()})
 					}
 				}
 			case item.IsFile:
 				if item.New {
 					p.FilesNew++
+					p.Added = append(p.Added, Entry{item.Name, item.Size})
 				}
 				if len(p.Copies) < 200 {
 					p.Copies = append(p.Copies, item.Name)

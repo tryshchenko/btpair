@@ -88,6 +88,7 @@ const (
 	KindNote LogKind = iota
 	KindCopy
 	KindDelete
+	KindRename // Text is "old → new"
 )
 
 const (
@@ -249,13 +250,14 @@ func (r *runner) run(ctx context.Context) {
 	}
 
 	opts := rsync.Options{
-		Bin:      r.req.RsyncBin,
-		Src:      mainVol.Path,
-		Dst:      replica.Path,
-		Paths:    r.pc.Paths,
-		BWLimit:  r.pc.BWLimit,
-		Checksum: r.req.Checksum,
-		Excludes: append(append([]string{"/" + meta.Dir + "/"}, config.DefaultExcludes...), r.pc.Exclude...),
+		Bin:        r.req.RsyncBin,
+		Src:        mainVol.Path,
+		Dst:        replica.Path,
+		Paths:      r.pc.Paths,
+		BWLimit:    r.pc.BWLimit,
+		Checksum:   r.req.Checksum,
+		Excludes:   append([]string{"/" + meta.Dir + "/"}, r.pc.Exclude...),
+		Perishable: config.DefaultExcludes,
 	}
 	if !r.pc.NoTrash {
 		opts.TrashDir = filepath.Join(meta.TrashDir(replica.Path), r.rec.RunID)
@@ -268,6 +270,26 @@ func (r *runner) run(ctx context.Context) {
 		if err != nil {
 			return StatusFailed, "", err
 		}
+		renamed := ""
+		if !r.pc.NoRenameDetection {
+			if n, err := r.detectRenames(ctx, p, mainVol.Path, replica.Path); err != nil {
+				return StatusFailed, "", err
+			} else if n > 0 && !r.req.DryRun {
+				// The replica changed: re-plan so the guards and the sync
+				// see what is actually left to do.
+				r.progress(Progress{ID: PhaseAnalyze, Current: "re-scanning after renames…"}, true)
+				if p, err = rsync.Analyze(ctx, opts); err != nil {
+					return StatusFailed, "", err
+				}
+			}
+			if s := r.rec.Stats; s.FilesRenamed > 0 {
+				verb := "renamed"
+				if r.req.DryRun {
+					verb = "would rename"
+				}
+				renamed = fmt.Sprintf(" · %s %d (%s)", verb, s.FilesRenamed, HumanBytes(s.BytesRenamed))
+			}
+		}
 		plan = p
 		r.ev <- Planned{Plan: p}
 		r.rec.Stats.FilesTotal, r.rec.Stats.BytesTotal = p.FilesTotal, p.BytesTotal
@@ -275,7 +297,7 @@ func (r *runner) run(ctx context.Context) {
 		if p.BytesToDelete > 0 {
 			note = fmt.Sprintf("%d to copy (%s) · %d to delete (%s)", p.FilesToCopy, HumanBytes(p.BytesToCopy), p.FilesToDelete, HumanBytes(p.BytesToDelete))
 		}
-		return r.guards(p, replica, note)
+		return r.guards(p, replica, note+renamed)
 	}) {
 		return
 	}

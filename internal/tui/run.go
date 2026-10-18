@@ -545,6 +545,8 @@ func (m *runModel) viewLog(w, h int) string {
 				txt = sAccent2.Render("+ ") + sSub.Render(truncMid(l.text, w-14))
 			case engine.KindDelete:
 				txt = sWarn.Render("− ") + sMuted.Render(truncMid(l.text, w-23)) + sFaint.Render("  → trash")
+			case engine.KindRename:
+				txt = sAccent.Render("↻ ") + sSub.Render(truncMid(l.text, w-14))
 			default:
 				txt = sText.Render(truncEnd(l.text, w-12))
 			}

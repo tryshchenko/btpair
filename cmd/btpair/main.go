@@ -327,6 +327,8 @@ func syncPlain(g *globals, pairID string, dry bool, stepList string, all, allowD
 				prefix = "  +"
 			case engine.KindDelete:
 				prefix = "  −"
+			case engine.KindRename:
+				prefix = "  ↻"
 			}
 			fmt.Printf("%s %s\n", prefix, e.Text)
 		case engine.Finished:

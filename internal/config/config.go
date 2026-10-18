@@ -30,6 +30,9 @@ type PairConfig struct {
 	BWLimit          string   `toml:"bwlimit"` // rsync --bwlimit, e.g. "50M"
 	// AllowWritableMain skips the read-only remount of the main drive.
 	AllowWritableMain bool `toml:"allow_writable_main"`
+	// NoRenameDetection turns off renaming moved/renamed files on the
+	// replica; they are then copied again in full.
+	NoRenameDetection bool `toml:"no_rename_detection"`
 }
 
 // StepConfig describes an extra step. Type selects the implementation

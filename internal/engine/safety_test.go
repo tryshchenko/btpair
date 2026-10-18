@@ -228,6 +228,25 @@ func TestPathsLimitScope(t *testing.T) {
 	}
 }
 
+// On exFAT, macOS keeps "._" metadata files next to everything, and Finder
+// drops .DS_Store files. They're excluded from syncing, but must not keep a
+// folder deleted on main alive on the replica.
+func TestDeletedFolderIsRemovedDespiteMetadataFiles(t *testing.T) {
+	f := newFixture(t, map[string]string{"keep.txt": "k", "Old/a.jpg": "a"}, nil)
+	mustStatus(t, mustRun(t, f), meta.StatusOK)
+	writeFiles(t, f.replica(), map[string]string{"Old/._a.jpg": "xattrs", "Old/.DS_Store": "finder", "._Old": "dir xattrs"})
+	os.RemoveAll(filepath.Join(f.main(), "Old"))
+	rec, _ := f.run(allowDelete)
+	mustStatus(t, rec, meta.StatusOK)
+	if exists(filepath.Join(f.replica(), "Old")) {
+		entries, _ := os.ReadDir(filepath.Join(f.replica(), "Old"))
+		t.Fatalf("deleted folder survived on the replica, holding %v", entries)
+	}
+	if !exists(meta.IdentityPath(f.replica())) {
+		t.Fatal("replica metadata was removed")
+	}
+}
+
 func TestExcludes(t *testing.T) {
 	f := newFixture(t, map[string]string{
 		"a.txt": "a", "build/x.tmp": "tmp", ".DS_Store": "finder", "sub/._resource": "apple double",

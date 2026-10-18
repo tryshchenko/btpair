@@ -54,6 +54,15 @@ CI runs the same on macOS. Real rsync runs against temporary folders acting as d
     runs whose trash is kept.
   - The dashboard shows the trash's size. `t` there, or `btpair empty-trash
     PAIR --yes`, empties it once you're sure.
+- **Renames.** rsync can't detect renames: a renamed or moved file looks
+  like a deletion plus a new file, so it would be copied again and the old
+  copy kept in trash. Before syncing, btpair pairs files the dry run would
+  delete with files it would create. A pair needs the same size and
+  modification time, must be unambiguous, and samples of both files' contents
+  must agree. btpair then renames those files on the replica and re-plans.
+  Renaming a 200 GB folder then takes seconds and needs no free space.
+  Anything doubtful is copied as before. Turn it off with
+  `no_rename_detection = true`.
 - **Guards.** The tool refuses to:
   - sync from an empty main
   - run when the replica lacks free space, even after emptying its trash
@@ -123,6 +132,7 @@ trash_keep = 5                   # runs whose trash is kept (runs that deleted n
 bwlimit = ""                     # e.g. "50M"
 steps = ["inventory"]            # default: all configured steps
 allow_writable_main = false      # skip the read-only remount (not recommended)
+no_rename_detection = false      # copy renamed/moved files again instead of renaming them
 ```
 
 ## CLI

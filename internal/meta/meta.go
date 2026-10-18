@@ -58,6 +58,8 @@ type SyncStats struct {
 	FilesDeleted     int64 `json:"files_deleted"`
 	BytesTotal       int64 `json:"bytes_total"`
 	BytesTransferred int64 `json:"bytes_transferred"`
+	FilesRenamed     int64 `json:"files_renamed,omitempty"` // renamed on the replica instead of re-copied
+	BytesRenamed     int64 `json:"bytes_renamed,omitempty"`
 }
 
 type StepResult struct {
