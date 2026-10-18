@@ -272,6 +272,9 @@ func (r *runner) run(ctx context.Context) {
 		r.ev <- Planned{Plan: p}
 		r.rec.Stats.FilesTotal, r.rec.Stats.BytesTotal = p.FilesTotal, p.BytesTotal
 		note := fmt.Sprintf("%d to copy · %d to delete · %s", p.FilesToCopy, p.FilesToDelete, HumanBytes(p.BytesToCopy))
+		if p.BytesToDelete > 0 {
+			note = fmt.Sprintf("%d to copy (%s) · %d to delete (%s)", p.FilesToCopy, HumanBytes(p.BytesToCopy), p.FilesToDelete, HumanBytes(p.BytesToDelete))
+		}
 		return r.guards(p, replica, note)
 	}) {
 		return
@@ -422,16 +425,11 @@ func (r *runner) preflight() (PhaseStatus, string, error) {
 }
 
 func (r *runner) guards(p *rsync.Plan, replica *volume.Volume, note string) (PhaseStatus, string, error) {
-	replicaEntries := p.FilesTotal - p.FilesCreated + p.FilesToDelete
-	if replicaEntries > 50 && !r.req.AllowMassDelete {
-		pct := float64(p.FilesToDelete) / float64(replicaEntries) * 100
-		if pct > r.pc.MaxDeletePercent {
-			return StatusFailed, note, fmt.Errorf("would delete %d of %d entries on the replica (%.0f%% > %.0f%% limit) — rerun with \"allow large deletions\" if intended",
-				p.FilesToDelete, replicaEntries, pct, r.pc.MaxDeletePercent)
-		}
+	if err := r.deleteLimit(p); err != nil {
+		return StatusFailed, note, err
 	}
-	if sp, err := replica.Space(); err == nil && uint64(p.BytesToCopy) > sp.Free {
-		return StatusFailed, note, fmt.Errorf("replica needs %s but only %s is free", HumanBytes(p.BytesToCopy), HumanBytes(int64(sp.Free)))
+	if err := r.makeRoom(p, replica); err != nil {
+		return StatusFailed, note, err
 	}
 	return StatusDone, note, nil
 }

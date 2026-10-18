@@ -101,6 +101,7 @@ type Plan struct {
 	FilesCreated  int64 // entries (files + dirs) that do not exist on replica yet
 	FilesToDelete int64
 	BytesToCopy   int64
+	BytesToDelete int64    // size of the replica files that would be deleted
 	Deletions     []string // sample, capped
 	Copies        []string // sample, capped
 }
@@ -133,6 +134,12 @@ func Analyze(ctx context.Context, o Options) (*Plan, error) {
 			case item.Deleting:
 				if len(p.Deletions) < 200 {
 					p.Deletions = append(p.Deletions, item.Name)
+				}
+				// rsync doesn't report sizes for deletions; look on the replica.
+				if !strings.HasSuffix(item.Name, "/") {
+					if fi, err := os.Lstat(filepath.Join(o.Dst, item.Name)); err == nil && fi.Mode().IsRegular() {
+						p.BytesToDelete += fi.Size()
+					}
 				}
 			case item.IsFile:
 				if item.New {

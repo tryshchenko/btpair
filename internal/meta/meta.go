@@ -178,29 +178,126 @@ func ListRuns(vol string, limit int) ([]RunRecord, error) {
 	return out, nil
 }
 
-// PruneTrash keeps the newest `keep` trash directories and removes the rest.
-func PruneTrash(vol string, keep int) error {
+// TrashRun is one run's trash folder on a replica: what that run deleted or
+// overwrote.
+type TrashRun struct {
+	ID    string // the run ID, which is also the folder name
+	Files int64
+	Bytes int64
+}
+
+// Time is when the run that filled this trash started.
+func (t TrashRun) Time() time.Time {
+	at, _ := time.ParseInLocation("20060102-150405.000", t.ID, time.Local)
+	return at
+}
+
+func trashIDs(vol string) ([]string, error) {
 	entries, err := os.ReadDir(TrashDir(vol))
 	if errors.Is(err, fs.ErrNotExist) {
-		return nil
+		return nil, nil
 	}
+	if err != nil {
+		return nil, err
+	}
+	var ids []string
+	for _, e := range entries {
+		if e.IsDir() {
+			ids = append(ids, e.Name())
+		}
+	}
+	sort.Strings(ids) // run IDs sort chronologically
+	return ids, nil
+}
+
+// ListTrash measures every trash folder on vol, oldest first.
+func ListTrash(vol string) ([]TrashRun, error) {
+	ids, err := trashIDs(vol)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]TrashRun, 0, len(ids))
+	for _, id := range ids {
+		t := TrashRun{ID: id}
+		err := filepath.WalkDir(filepath.Join(TrashDir(vol), id), func(_ string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if d.Type().IsRegular() {
+				if info, err := d.Info(); err == nil {
+					t.Files++
+					t.Bytes += info.Size()
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, t)
+	}
+	return out, nil
+}
+
+// TrashTotal sums a trash listing.
+func TrashTotal(runs []TrashRun) (files, bytes int64) {
+	for _, t := range runs {
+		files += t.Files
+		bytes += t.Bytes
+	}
+	return files, bytes
+}
+
+// RemoveTrash permanently deletes one run's trash folder.
+func RemoveTrash(vol, id string) error {
+	if id == "" || id != filepath.Base(id) || strings.HasPrefix(id, ".") {
+		return errors.New("invalid trash id " + id)
+	}
+	if err := os.RemoveAll(filepath.Join(TrashDir(vol), id)); err != nil {
+		return err
+	}
+	// exFAT keeps a "._" AppleDouble sidecar next to the folder.
+	os.Remove(filepath.Join(TrashDir(vol), "._"+id))
+	return nil
+}
+
+// PruneTrash removes trash folders that hold no files (runs that deleted
+// nothing), then keeps the newest `keep` of the rest.
+func PruneTrash(vol string, keep int) error {
+	ids, err := trashIDs(vol)
 	if err != nil {
 		return err
 	}
-	var dirs []string
-	for _, e := range entries {
-		if e.IsDir() {
-			dirs = append(dirs, e.Name())
-		}
-	}
-	sort.Strings(dirs)
-	for len(dirs) > keep {
-		if err := os.RemoveAll(filepath.Join(TrashDir(vol), dirs[0])); err != nil {
+	var kept []string
+	for _, id := range ids {
+		if hasFiles(filepath.Join(TrashDir(vol), id)) {
+			kept = append(kept, id)
+		} else if err := RemoveTrash(vol, id); err != nil {
 			return err
 		}
-		dirs = dirs[1:]
+	}
+	for len(kept) > keep {
+		if err := RemoveTrash(vol, kept[0]); err != nil {
+			return err
+		}
+		kept = kept[1:]
 	}
 	return nil
+}
+
+var errFound = errors.New("found")
+
+func hasFiles(dir string) bool {
+	err := filepath.WalkDir(dir, func(_ string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return errFound // unreadable: keep it rather than guess
+		}
+		if !d.IsDir() {
+			return errFound
+		}
+		return nil
+	})
+	return errors.Is(err, errFound)
 }
 
 // NewRunID returns a sortable, human-readable run identifier.

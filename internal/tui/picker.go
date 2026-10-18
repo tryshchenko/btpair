@@ -195,13 +195,16 @@ func (m *pickerModel) view(a *App) string {
 
 	b.WriteString("\n" + label("Mirror") + "\n")
 	b.WriteString(m.row(-1, sMuted.Render("[■]"), "Mirror main → replica", titleW, "one-way rsync; replica changes go to trash", sMuted.Render("always"), w) + "\n")
+	if s := engine.TrashSummary(a.trash[m.pair.Replica.UUID]); s != "" {
+		b.WriteString(sMuted.Render(truncEnd("       trash on the replica: "+s+" — emptied oldest first if space runs short", w)) + "\n")
+	}
 
 	b.WriteString("\n" + label("Options") + "\n")
 	n := len(m.items)
 	b.WriteString(m.row(n, check(m.dryRun), "Dry run", titleW, "analyze only, write nothing to either drive", "", w) + "\n")
 	limit := a.cfg.Pair(m.pair.ID).MaxDeletePercent
 	b.WriteString(m.row(n+1, check(m.checksum), "Verify by checksum", titleW, "compare file contents, not just size & date (reads every file)", "", w) + "\n")
-	b.WriteString(m.row(n+2, check(m.allowDel), "Allow large deletions", titleW, fmt.Sprintf("permit deleting more than %.0f%% of the replica", limit), "", w) + "\n")
+	b.WriteString(m.row(n+2, check(m.allowDel), "Allow large deletions", titleW, fmt.Sprintf("permit deleting more than %.0f%% of the replica's files or data", limit), "", w) + "\n")
 
 	if st := m.pair.State(); st != nil && len(st.Pending) > 0 {
 		b.WriteString("\n" + sWarn.Render(fmt.Sprintf("! %d item(s) pending from the last run will be retried", len(st.Pending))) + "\n")

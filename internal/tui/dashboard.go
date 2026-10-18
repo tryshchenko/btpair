@@ -13,7 +13,9 @@ import (
 )
 
 type dashModel struct {
-	cursor int
+	cursor       int
+	confirmTrash string // pair ID awaiting "y" to empty its trash
+	emptying     string // pair ID whose trash is being emptied
 }
 
 func (d *dashModel) clamp(n int) {
@@ -33,6 +35,18 @@ func (a *App) updateDash(msg tea.Msg) tea.Cmd {
 	km, ok := msg.(tea.KeyMsg)
 	if !ok {
 		return nil
+	}
+	if id := a.dash.confirmTrash; id != "" {
+		a.dash.confirmTrash = ""
+		p := a.pairByID(id)
+		if km.String() != "y" || p == nil {
+			return nil
+		}
+		a.dash.emptying = id
+		return func() tea.Msg {
+			files, bytes, err := engine.EmptyTrash(p)
+			return trashEmptiedMsg{id, files, bytes, err}
+		}
 	}
 	switch km.String() {
 	case "q", "esc":
@@ -56,6 +70,19 @@ func (a *App) updateDash(msg tea.Msg) tea.Cmd {
 		a.np = newNewPair(a)
 		a.screen = scrNewPair
 		return a.np.init()
+	case "t":
+		p := a.selectedPair()
+		switch {
+		case p == nil:
+		case p.Replica == nil:
+			a.setFlash(engine.LevelWarn, "connect the replica drive of "+p.ID+" to empty its trash")
+		case a.dash.emptying != "":
+			a.setFlash(engine.LevelWarn, "already emptying trash")
+		case engine.TrashSummary(a.trash[p.Replica.UUID]) == "":
+			a.setFlash(engine.LevelInfo, "the trash on "+p.Replica.Name+" is empty")
+		default:
+			a.dash.confirmTrash = p.ID
+		}
 	case "h":
 		p := a.selectedPair()
 		if p == nil || (p.Main == nil && p.Replica == nil) {
@@ -128,7 +155,12 @@ func (a *App) viewDash() string {
 		}
 	}
 
-	hints := helpBar("↑↓", "select", "enter", "back up", "d", "dry run", "h", "history", "n", "new pair", "r", "rescan", "q", "quit")
+	hints := helpBar("↑↓", "select", "enter", "back up", "d", "dry run", "h", "history", "t", "empty trash", "n", "new pair", "r", "rescan", "q", "quit")
+	if p := a.pairByID(a.dash.confirmTrash); p != nil && p.Replica != nil {
+		_, bytes := meta.TrashTotal(a.trash[p.Replica.UUID])
+		q := fmt.Sprintf("Permanently delete %s of trash on %s? ", humanBytes(bytes), p.Replica.Name)
+		return layout(a, b.String(), rule(w)+"\n"+truncEnd(sWarn.Render(q)+sKey.Render("y")+sSub.Render(" deletes · any other key cancels"), w))
+	}
 	return layout(a, b.String(), a.footer(hints))
 }
 
@@ -162,6 +194,9 @@ func (a *App) pairCard(p *engine.Pair, selected bool, w int) string {
 	b = append(b, "  "+a.driveRowOrMissing("replica", p.Replica, inner-2))
 	b = append(b, "")
 	b = append(b, "  "+lastRunLine(st, inner-2))
+	if line := a.trashLine(p, inner-2); line != "" {
+		b = append(b, "  "+line)
+	}
 	for _, pr := range p.Problems {
 		b = append(b, "  "+sErr.Render("✗ "+truncEnd(pr, inner-4)))
 	}
@@ -172,6 +207,21 @@ func (a *App) pairCard(p *engine.Pair, selected bool, w int) string {
 	}
 	return lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(border).
 		Padding(0, 1).Width(w - 2).Render(strings.Join(b, "\n"))
+}
+
+// trashLine describes what the replica's trash holds, or "" when empty.
+func (a *App) trashLine(p *engine.Pair, w int) string {
+	if p.Replica == nil {
+		return ""
+	}
+	if a.dash.emptying == p.ID {
+		return spinner(a.tick) + sMuted.Render("  emptying trash…")
+	}
+	s := engine.TrashSummary(a.trash[p.Replica.UUID])
+	if s == "" {
+		return ""
+	}
+	return truncEnd(sMuted.Render("trash  ")+sSub.Render(s)+sFaint.Render("  ·  ")+sKey.Render("t")+sMuted.Render(" empties")+sFaint.Render("  ·  ")+sMuted.Render("deleted on main, still restorable"), w)
 }
 
 func pairStatus(p *engine.Pair, st *meta.State) string {

@@ -109,7 +109,7 @@ func TestAnalyzeAndRun(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if p.FilesToCopy != 20 || p.FilesToDelete != 1 || p.BytesToCopy != 20*50_000 || len(p.Copies) != 20 || p.Deletions[0] != "stale.txt" {
+	if p.FilesToCopy != 20 || p.FilesToDelete != 1 || p.BytesToDelete != 1 || p.BytesToCopy != 20*50_000 || len(p.Copies) != 20 || p.Deletions[0] != "stale.txt" {
 		t.Fatalf("plan = %+v", p)
 	}
 	if _, err := os.Stat(filepath.Join(dst, "f00.bin")); err == nil {

@@ -1,6 +1,7 @@
 package meta
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -116,6 +117,7 @@ func TestPruneTrashKeepsNewest(t *testing.T) {
 	vol := t.TempDir()
 	for _, n := range []string{"20260101-000000.000", "20260102-000000.000", "20260103-000000.000", "20260104-000000.000"} {
 		os.MkdirAll(filepath.Join(TrashDir(vol), n, "x"), 0o755)
+		os.WriteFile(filepath.Join(TrashDir(vol), n, "x", "f"), []byte("deleted"), 0o644)
 	}
 	if err := PruneTrash(vol, 2); err != nil {
 		t.Fatal(err)
@@ -126,5 +128,63 @@ func TestPruneTrashKeepsNewest(t *testing.T) {
 	}
 	if err := PruneTrash(t.TempDir(), 2); err != nil {
 		t.Errorf("missing trash dir: %v", err)
+	}
+}
+
+// Runs that deleted nothing leave empty trash folders; they must not push
+// real deletions out of the kept window.
+func TestPruneTrashIgnoresEmptyRuns(t *testing.T) {
+	vol := t.TempDir()
+	deleted := "20260101-000000.000"
+	os.MkdirAll(filepath.Join(TrashDir(vol), deleted, "Movies"), 0o755)
+	os.WriteFile(filepath.Join(TrashDir(vol), deleted, "Movies", "film.mkv"), []byte("x"), 0o644)
+	for i := 2; i <= 9; i++ {
+		os.MkdirAll(filepath.Join(TrashDir(vol), fmt.Sprintf("2026010%d-000000.000", i), "empty", "dirs"), 0o755)
+	}
+	if err := PruneTrash(vol, 2); err != nil {
+		t.Fatal(err)
+	}
+	entries, _ := os.ReadDir(TrashDir(vol))
+	if len(entries) != 1 || entries[0].Name() != deleted {
+		t.Fatalf("kept %v, want only %s", entries, deleted)
+	}
+}
+
+func TestListAndRemoveTrash(t *testing.T) {
+	vol := t.TempDir()
+	write := func(id, p, c string) {
+		full := filepath.Join(TrashDir(vol), id, p)
+		os.MkdirAll(filepath.Dir(full), 0o755)
+		os.WriteFile(full, []byte(c), 0o644)
+	}
+	write("20260102-000000.000", "a/b.txt", "12345")
+	write("20260101-000000.000", "x", "1")
+	write("20260101-000000.000", "deep/y", "22")
+	os.WriteFile(filepath.Join(TrashDir(vol), "._20260101-000000.000"), nil, 0o644)
+
+	runs, err := ListTrash(vol)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(runs) != 2 || runs[0].ID != "20260101-000000.000" || runs[0].Files != 2 || runs[0].Bytes != 3 || runs[1].Bytes != 5 {
+		t.Fatalf("ListTrash = %+v", runs)
+	}
+	if runs[0].Time().Day() != 1 || runs[0].Time().Month() != time.January {
+		t.Errorf("Time() = %v", runs[0].Time())
+	}
+	if f, b := TrashTotal(runs); f != 3 || b != 8 {
+		t.Errorf("TrashTotal = %d files, %d bytes", f, b)
+	}
+	for _, bad := range []string{"", "..", "../x", "a/b", ".hidden"} {
+		if RemoveTrash(vol, bad) == nil {
+			t.Errorf("RemoveTrash(%q) accepted", bad)
+		}
+	}
+	if err := RemoveTrash(vol, "20260101-000000.000"); err != nil {
+		t.Fatal(err)
+	}
+	entries, _ := os.ReadDir(TrashDir(vol))
+	if len(entries) != 1 || entries[0].Name() != "20260102-000000.000" {
+		t.Fatalf("after remove: %v (sidecar should be gone too)", entries)
 	}
 }

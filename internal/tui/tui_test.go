@@ -122,6 +122,11 @@ func newApp(t *testing.T) *fixture {
 		}
 	}
 
+	// Something deleted by an earlier sync, still in the replica's trash.
+	trashed := filepath.Join(meta.TrashDir(filepath.Join(root, "WORK-REPLICA")), "20261017-180737.883", "Movies", "old film.mkv")
+	os.MkdirAll(filepath.Dir(trashed), 0o755)
+	os.WriteFile(trashed, []byte("deleted on main"), 0o644)
+
 	cfg := &config.Config{Pairs: map[string]config.PairConfig{}, Steps: map[string]config.StepConfig{
 		"quick": {Type: "shell", Title: "A step with a rather long title that must truncate", Description: strings.Repeat("description ", 20), Run: "true", Default: true},
 		"skip":  {Type: "shell", Title: "Up to date step", Run: "true", SkipIf: "echo fresh; exit 0"},
@@ -135,6 +140,12 @@ func newApp(t *testing.T) *fixture {
 	// test folders once hid a layout bug.
 	for i, v := range a.vols {
 		a.spaces[v.UUID] = volume.Space{Total: 2_000_000_000_000, Free: uint64(1_187_654_321_000 - i*99_000_000_000)}
+	}
+	for uuid, runs := range a.trash {
+		for i := range runs {
+			runs[i].Bytes, runs[i].Files = 812_345_678_901, 4_734
+		}
+		a.trash[uuid] = runs
 	}
 	return f
 }
@@ -309,7 +320,8 @@ func TestEveryScreenFitsTheTerminal(t *testing.T) {
 				t.Fatal("h did not open history")
 			}
 		},
-		"new pair": func(t *testing.T, f *fixture) { f.key("n") },
+		"new pair":           func(t *testing.T, f *fixture) { f.key("n") },
+		"empty trash prompt": func(t *testing.T, f *fixture) { f.key("t") },
 		"new pair confirm": func(t *testing.T, f *fixture) {
 			f.key("n")
 			f.key("enter")
@@ -368,6 +380,50 @@ func TestDashboardShowsPairsAndDrives(t *testing.T) {
 	// Ready pairs are listed before incomplete ones.
 	if strings.Index(v, "Work SSDs") > strings.Index(v, "Music & films") {
 		t.Error("ready pair not listed first")
+	}
+}
+
+func TestDashboardShowsTrashAndEmptiesItOnConfirm(t *testing.T) {
+	f := newApp(t)
+	trash := meta.TrashDir(f.workPair().Replica.Path)
+	if v := f.view(); !strings.Contains(v, "trash  812.3 GB from 1 run, oldest 17 Oct 2026") {
+		t.Fatalf("dashboard does not show the trash:\n%s", v)
+	}
+
+	f.key("t")
+	if v := f.view(); !strings.Contains(v, "Permanently delete 812.3 GB") || !strings.Contains(v, "WORK-REPLICA") {
+		t.Fatalf("no confirmation prompt:\n%s", v)
+	}
+	f.key("n") // anything but y cancels
+	if entries, _ := os.ReadDir(trash); len(entries) != 1 {
+		t.Fatal("trash emptied without confirmation")
+	}
+	if strings.Contains(f.view(), "Permanently delete") {
+		t.Fatal("prompt still shown after cancelling")
+	}
+
+	f.key("t")
+	f.key("y")
+	if entries, _ := os.ReadDir(trash); len(entries) != 0 {
+		t.Fatalf("trash not emptied: %v", entries)
+	}
+	if !strings.Contains(f.app.flash, "emptied trash on work") {
+		t.Errorf("flash = %q", f.app.flash)
+	}
+	if strings.Contains(f.view(), "trash  ") {
+		t.Error("dashboard still shows trash after emptying")
+	}
+	f.key("t")
+	if !strings.Contains(f.app.flash, "is empty") || f.app.dash.confirmTrash != "" {
+		t.Errorf("t on empty trash: flash %q, confirm %q", f.app.flash, f.app.dash.confirmTrash)
+	}
+}
+
+func TestPickerMentionsTrash(t *testing.T) {
+	f := newApp(t)
+	f.key("enter")
+	if v := f.view(); !strings.Contains(v, "trash on the replica: 812.3 GB") {
+		t.Fatalf("picker does not mention the trash:\n%s", v)
 	}
 }
 

@@ -26,6 +26,7 @@ usage:
   btpair status [flags]               print pairs and their last run
   btpair init  --main NAME --replica NAME --pair ID [--label TEXT]
   btpair sync  PAIR [--dry-run] [--checksum] [--steps a,b | --all-steps] [--allow-deletes]
+  btpair empty-trash PAIR [--yes]     permanently delete the replica's trash
 
 flags:
   --dev DIR       treat each subfolder of DIR as a drive (or set BT_DEV_ROOT)
@@ -112,6 +113,22 @@ func run(args []string) error {
 			return errors.New("sync: which pair? (btpair sync PAIR)")
 		}
 		return syncPlain(&g, pairID, *dry, *stepList, *allSteps, *allowDel, *checksum)
+	case "empty-trash":
+		yes := fs.Bool("yes", false, "really delete")
+		pairID := ""
+		if len(args) > 0 && !strings.HasPrefix(args[0], "-") {
+			pairID, args = args[0], args[1:]
+		}
+		if err := fs.Parse(args); err != nil {
+			return err
+		}
+		if pairID == "" && fs.NArg() > 0 {
+			pairID = fs.Arg(0)
+		}
+		if pairID == "" {
+			return errors.New("empty-trash: which pair? (btpair empty-trash PAIR)")
+		}
+		return emptyTrash(&g, pairID, *yes)
 	case "help", "-h", "--help":
 		fmt.Print(usage)
 		return nil
@@ -152,6 +169,13 @@ func status(g *globals) error {
 			}
 			sp, _ := side.v.Space()
 			fmt.Printf("  %-7s %-20s %s free of %s\n", side.role, side.v.Name, engine.HumanBytes(int64(sp.Free)), engine.HumanBytes(int64(sp.Total)))
+		}
+		if p.Replica != nil {
+			if runs, err := meta.ListTrash(p.Replica.Path); err == nil {
+				if sum := engine.TrashSummary(runs); sum != "" {
+					fmt.Printf("  trash   %s\n", sum)
+				}
+			}
 		}
 		if st := p.State(); st != nil && st.Status != meta.StatusNever {
 			fmt.Printf("  last    %s at %s, %d copied, %d deleted, %d pending\n", st.Status, st.StartedAt.Local().Format(time.DateTime),
@@ -194,20 +218,55 @@ func initPair(g *globals, mainName, replicaName, pair, lbl string) error {
 	return nil
 }
 
-// syncPlain runs a backup with line-oriented output, for scripts and logs.
-func syncPlain(g *globals, pairID string, dry bool, stepList string, all, allowDel, checksum bool) error {
+func connectedPair(g *globals, id string) (*engine.Pair, error) {
 	_, pairs, _, err := detect(g)
+	if err != nil {
+		return nil, err
+	}
+	for _, p := range pairs {
+		if p.ID == id {
+			return p, nil
+		}
+	}
+	return nil, fmt.Errorf("pair %q is not connected", id)
+}
+
+func emptyTrash(g *globals, pairID string, yes bool) error {
+	p, err := connectedPair(g, pairID)
 	if err != nil {
 		return err
 	}
-	var pair *engine.Pair
-	for _, p := range pairs {
-		if p.ID == pairID {
-			pair = p
-		}
+	if p.Replica == nil {
+		return fmt.Errorf("the replica of %s is not connected", pairID)
 	}
-	if pair == nil {
-		return fmt.Errorf("pair %q is not connected", pairID)
+	runs, err := meta.ListTrash(p.Replica.Path)
+	if err != nil {
+		return err
+	}
+	sum := engine.TrashSummary(runs)
+	if sum == "" {
+		fmt.Printf("the trash on %s is empty\n", p.Replica.Name)
+		return nil
+	}
+	if !yes {
+		for _, t := range runs {
+			if t.Files > 0 {
+				fmt.Printf("  %s  %10s  %d files\n", t.Time().Format(time.DateTime), engine.HumanBytes(t.Bytes), t.Files)
+			}
+		}
+		fmt.Printf("trash on %s: %s\nthis permanently deletes it; rerun with --yes to proceed\n", p.Replica.Name, sum)
+		return nil
+	}
+	files, bytes, err := engine.EmptyTrash(p)
+	fmt.Printf("emptied %s (%d files) from %s\n", engine.HumanBytes(bytes), files, p.Replica.Name)
+	return err
+}
+
+// syncPlain runs a backup with line-oriented output, for scripts and logs.
+func syncPlain(g *globals, pairID string, dry bool, stepList string, all, allowDel, checksum bool) error {
+	pair, err := connectedPair(g, pairID)
+	if err != nil {
+		return err
 	}
 	available, err := steps.ForPair(g.cfg, pairID)
 	if err != nil {

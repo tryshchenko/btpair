@@ -19,7 +19,9 @@ CI runs the same on macOS. Real rsync runs against temporary folders acting as d
   - a sync never modifies the main drive
   - the replica becomes an exact mirror, and displaced files land in its trash
   - `.backuptool/` never crosses drives
-  - the empty-main, mass-delete, free-space, lock and swapped-drive guards hold
+  - the empty-main, mass-delete (count and size), free-space, lock and
+    swapped-drive guards hold
+  - trash makes room oldest-first and only as needed, never in a dry run
   - dry runs write nothing
   - `paths` and excludes are respected
   - cancellation leaves no partial files
@@ -41,13 +43,22 @@ CI runs the same on macOS. Real rsync runs against temporary folders acting as d
   main drives and similar problems block the pair.
 - **One-way sync.** `rsync -aHX --delete` from main to replica. During the sync
   the main drive is **remounted read-only** (`diskutil mount readOnly`) and
-  verified as read-only before rsync starts. Anything rsync deletes or
-  overwrites on the replica is moved to `.backuptool/trash/<run>/`, and the last
-  `trash_keep` runs are kept.
+  verified as read-only before rsync starts.
+- **Trash.** Anything rsync deletes or overwrites on the replica is moved to
+  `.backuptool/trash/<run>/`, keeping its path, so you can copy it back. The
+  trash only borrows free space:
+  - When a sync needs more room than is free, the oldest runs' trash is
+    emptied first, only as much as needed, and each emptied run is logged. A
+    dry run reports what it would empty.
+  - Runs that deleted nothing don't count towards `trash_keep`, the number of
+    runs whose trash is kept.
+  - The dashboard shows the trash's size. `t` there, or `btpair empty-trash
+    PAIR --yes`, empties it once you're sure.
 - **Guards.** The tool refuses to:
   - sync from an empty main
-  - run when the replica lacks free space
-  - delete more than `max_delete_percent` of the replica, unless explicitly allowed
+  - run when the replica lacks free space, even after emptying its trash
+  - delete more than `max_delete_percent` of the replica's files or of its
+    data (so deleting a few huge files counts), unless explicitly allowed
 - **Metadata.** `.backuptool/` is excluded from rsync:
   - `state.json`: last run status, stats, pending items. It's written as
     `in_progress` before any change, so interrupted runs are detected.
@@ -108,7 +119,7 @@ open it while holding Option as Photos launches.
 paths = ["Projects", "Photos"]   # default: whole drive
 exclude = ["node_modules/", "*.tmp"]
 max_delete_percent = 25
-trash_keep = 5
+trash_keep = 5                   # runs whose trash is kept (runs that deleted nothing don't count)
 bwlimit = ""                     # e.g. "50M"
 steps = ["inventory"]            # default: all configured steps
 allow_writable_main = false      # skip the read-only remount (not recommended)
@@ -121,6 +132,7 @@ btpair                                   dashboard
 btpair status
 btpair init --main NAME --replica NAME --pair ID [--label TEXT]
 btpair sync PAIR [--dry-run] [--checksum] [--steps a,b | --all-steps] [--allow-deletes]
+btpair empty-trash PAIR [--yes]          without --yes, only lists what would go
 ```
 
 Use `--dev DIR` to treat the subfolders of `DIR` as drives. `BT_ALLOW_DMG=1`

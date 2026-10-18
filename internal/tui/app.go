@@ -3,6 +3,7 @@ package tui
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 
 	"github.com/tryshchenko/btpair/internal/config"
 	"github.com/tryshchenko/btpair/internal/engine"
+	"github.com/tryshchenko/btpair/internal/meta"
 	"github.com/tryshchenko/btpair/internal/volume"
 )
 
@@ -40,7 +42,8 @@ type App struct {
 	vols     []*volume.Volume
 	pairs    []*engine.Pair
 	unpaired []*volume.Volume
-	spaces   map[string]volume.Space // keyed by volume UUID
+	spaces   map[string]volume.Space    // keyed by volume UUID
+	trash    map[string][]meta.TrashRun // keyed by replica UUID
 	scanned  bool
 	scanErr  error
 	polling  bool
@@ -63,10 +66,19 @@ type (
 		err  error
 	}
 	spaceMsg map[string]volume.Space
+	trashMsg struct {
+		uuid string
+		runs []meta.TrashRun
+	}
+	trashEmptiedMsg struct {
+		pair         string
+		files, bytes int64
+		err          error
+	}
 )
 
 func New(opts Options) *App {
-	return &App{opts: opts, cfg: opts.Config, spaces: map[string]volume.Space{}}
+	return &App{opts: opts, cfg: opts.Config, spaces: map[string]volume.Space{}, trash: map[string][]meta.TrashRun{}}
 }
 
 func Run(opts Options) error {
@@ -108,6 +120,20 @@ func (a *App) pollSpace(vols ...*volume.Volume) tea.Cmd {
 	}
 }
 
+// measureTrash sizes each connected replica's trash off the UI thread.
+func (a *App) measureTrash() tea.Cmd {
+	var cmds []tea.Cmd
+	for _, p := range a.pairs {
+		if v := p.Replica; v != nil {
+			cmds = append(cmds, func() tea.Msg {
+				runs, _ := meta.ListTrash(v.Path)
+				return trashMsg{v.UUID, runs}
+			})
+		}
+	}
+	return tea.Batch(cmds...)
+}
+
 func (a *App) setFlash(l engine.Level, msg string) {
 	a.flash, a.flashLevel, a.flashAt = msg, l, time.Now()
 }
@@ -136,7 +162,24 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.vols = msg.vols
 		a.pairs, a.unpaired = engine.Group(msg.vols)
 		a.dash.clamp(len(a.pairs))
-		return a, a.pollSpace(msg.vols...)
+		return a, tea.Batch(a.pollSpace(msg.vols...), a.measureTrash())
+
+	case trashMsg:
+		a.trash[msg.uuid] = msg.runs
+		return a, nil
+
+	case trashEmptiedMsg:
+		a.dash.emptying = ""
+		if msg.err != nil {
+			a.setFlash(engine.LevelError, "emptying trash: "+msg.err.Error())
+		} else {
+			a.setFlash(engine.LevelInfo, fmt.Sprintf("emptied trash on %s: %s, %s files", msg.pair, engine.HumanBytes(msg.bytes), humanCount(msg.files)))
+		}
+		var vols []*volume.Volume
+		if p := a.pairByID(msg.pair); p != nil {
+			vols = append(vols, p.Replica)
+		}
+		return a, tea.Batch(a.pollSpace(vols...), a.measureTrash())
 
 	case spaceMsg:
 		a.polling = false
